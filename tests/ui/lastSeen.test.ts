@@ -9,7 +9,7 @@ class MemStorage {
   removeItem(k: string) { this.m.delete(k) }
 }
 
-const base: Tariffs = JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
+const base: Tariffs = JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8'))
 const clone = (): Tariffs => JSON.parse(JSON.stringify(base))
 
 async function fresh() {

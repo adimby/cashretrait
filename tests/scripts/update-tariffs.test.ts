@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { runUpdate, type Fetcher } from '../../scripts/update-tariffs'
 import type { Tariffs } from '../../src/tariffs/schema'
 
-const current = JSON.parse(readFileSync('public/tarifs.json', 'utf8')) as Tariffs
+const current = JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8')) as Tariffs
 const fx = (n: string) => new Uint8Array(readFileSync(`tests/fixtures/${n}`))
 const enc = (s: string) => new TextEncoder().encode(s)
 const mvolaHtml = readFileSync('tests/fixtures/mvola.html', 'utf8')

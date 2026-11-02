@@ -4,7 +4,7 @@ import { addTier, applyEdit, gitBlobSha, mapGenericTable, parseAmount, removeTie
 import { mergeOperator, validateTariffs } from '../../src/tariffs/validate'
 import type { FeeTable, Tariffs } from '../../src/tariffs/schema'
 
-const tariffs = (): Tariffs => JSON.parse(readFileSync(new URL('../../public/tarifs.json', import.meta.url), 'utf8'))
+const tariffs = (): Tariffs => JSON.parse(readFileSync(new URL('../fixtures/tarifs.snapshot.json', import.meta.url), 'utf8'))
 const table: FeeTable = [
   { min: 100, max: 1000, fee: 50 },
   { min: 1001, max: 5000, fee: 100 },

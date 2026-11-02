@@ -3,9 +3,13 @@ import { readFileSync } from 'node:fs'
 import { validateTariffs, diffTariffs, formatChange, mergeOperator } from '../../src/tariffs/validate'
 import type { Tariffs } from '../../src/tariffs/schema'
 
-const load = (): Tariffs => JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
+const load = (): Tariffs => JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8'))
 
 describe('validateTariffs', () => {
+  it('live public/tarifs.json is structurally valid', () => {
+    const live = JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
+    expect(validateTariffs(live, null)).toEqual({ status: 'ok', reasons: [] })
+  })
   it('current tariffs vs themselves are ok and diff is empty', () => {
     const t = load()
     expect(validateTariffs(t, load())).toEqual({ status: 'ok', reasons: [] })

@@ -2,7 +2,10 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { TariffsSchema } from '../../src/tariffs/schema'
 
-const raw = JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
+// Value assertions use the frozen snapshot; only the structural check reads the live file,
+// so a genuine fee change committed by the daily workflow never breaks the suite.
+const raw = JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8'))
+const live = JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
 const bad = (tier: unknown) => {
   const t = structuredClone(raw)
   t.operators.mvola.fees.withdrawal = [tier]
@@ -10,7 +13,8 @@ const bad = (tier: unknown) => {
 }
 
 describe('tariffs schema', () => {
-  it('parses public/tarifs.json', () => {
+  it('parses public/tarifs.json (live) and the snapshot', () => {
+    expect(() => TariffsSchema.parse(live)).not.toThrow()
     expect(() => TariffsSchema.parse(raw)).not.toThrow()
   })
   it('rejects min > max', () => expect(bad({ min: 1000, max: 100, fee: 5 })).toBe(false))

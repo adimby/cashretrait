@@ -6,7 +6,7 @@ import type { Tariffs } from '../../src/tariffs/schema'
 export const SECRET = 'test-secret-0123456789abcdef-0123456789'
 export const NOW = Date.UTC(2026, 10, 2, 12, 0, 0)
 export const ENV = { ADMIN_PASSWORD: 'correct horse', ADMIN_SESSION_SECRET: SECRET, GITHUB_TOKEN: 'ghp_test', GITHUB_REPO: 'adimby/cashretrait' }
-export const tariffsText = () => readFileSync('public/tarifs.json', 'utf8')
+export const tariffsText = () => readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8')
 export const current = (): Tariffs => JSON.parse(tariffsText())
 export const fixture = (n: string) => new Uint8Array(readFileSync(`tests/fixtures/${n}`))
 export const authCookie = (now = NOW) => `cr_admin=${signSession(SECRET, now)}`

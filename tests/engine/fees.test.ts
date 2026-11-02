@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { feeFor } from '../../src/engine/fees'
 import type { Tariffs } from '../../src/tariffs/schema'
 
-const tariffs: Tariffs = JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
+const tariffs: Tariffs = JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8'))
 const t = tariffs.operators.mvola.fees.withdrawal!
 
 describe('feeFor', () => {

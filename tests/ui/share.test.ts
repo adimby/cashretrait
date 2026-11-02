@@ -8,7 +8,7 @@ import { shareText, share, shareDetailed } from '../../src/ui/share'
 import { formatAr } from '../../src/ui/format'
 import type { SplitOk } from '../../src/engine/types'
 
-const T = TariffsSchema.parse(JSON.parse(readFileSync('public/tarifs.json', 'utf8')))
+const T = TariffsSchema.parse(JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8')))
 const mv = T.operators.mvola.fees
 const opts1 = optsFor(T, 'mvola', { step: 1, maxTx: 5 })
 const ar = (n: string) => n.replace(/ /g, ' ') + ' Ar'

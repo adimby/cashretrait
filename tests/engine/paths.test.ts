@@ -5,7 +5,7 @@ import { optimizeSplit } from '../../src/engine/optimize'
 import { feeFor } from '../../src/engine/fees'
 import type { Tariffs } from '../../src/tariffs/schema'
 
-const t: Tariffs = JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
+const t: Tariffs = JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8'))
 const o = { step: 1000, maxTx: 5 }
 const lim = (id: 'mvola' | 'airtel' | 'orange') => ({ ...o, minTx: t.operators[id].limits.minTx, maxTxAmount: t.operators[id].limits.maxTx })
 const sorted = (xs: number[]) => xs.every((x, i) => i === 0 || xs[i - 1] <= x)

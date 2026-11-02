@@ -4,7 +4,7 @@ import { extractPdfItems, groupLines, parseOrange, parseOrangeItems, type PdfIte
 import { ParseError } from '../../src/tariffs/parsers/common'
 import type { Tariffs } from '../../src/tariffs/schema'
 
-const tariffs = (): Tariffs => JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
+const tariffs = (): Tariffs => JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8'))
 const pdf = () => new Uint8Array(readFileSync('tests/fixtures/orange.pdf'))
 const items = () => extractPdfItems(pdf())
 const orange = () => tariffs().operators.orange

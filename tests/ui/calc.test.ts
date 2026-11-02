@@ -4,7 +4,7 @@ import { TariffsSchema } from '../../src/tariffs/schema'
 import { compute, formFrom, paramsOf, DEFAULT_FORM, type CalcForm } from '../../src/ui/calc'
 import type { SplitOk } from '../../src/engine/types'
 
-const T = TariffsSchema.parse(JSON.parse(readFileSync('public/tarifs.json', 'utf8')))
+const T = TariffsSchema.parse(JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8')))
 const base = { step: 1000 as const, maxTx: 5 }
 const run = (p: Partial<CalcForm>) => compute(T, { ...DEFAULT_FORM, ...p }, base)
 

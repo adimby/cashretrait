@@ -5,7 +5,7 @@ import type { SplitOk } from '../../src/engine/types'
 import type { FeeTable, Tariffs } from '../../src/tariffs/schema'
 import { bruteforce, bruteforceAll } from './bruteforce'
 
-const tariffs: Tariffs = JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
+const tariffs: Tariffs = JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8'))
 const t = tariffs.operators.mvola.fees.withdrawal!
 const opts = { step: 1000, maxTx: 5, minTx: 100, maxTxAmount: 20000000 }
 const sum = (r: SplitOk) => r.transactions.reduce((s, x) => s + x.amount, 0)

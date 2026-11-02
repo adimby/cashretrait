@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 
-const good = JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
+const good = JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8'))
 
 class MemStorage {
   m = new Map<string, string>()

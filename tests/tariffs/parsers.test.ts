@@ -6,7 +6,7 @@ import { parseMvola } from '../../src/tariffs/parsers/mvola'
 import { parseGenericTables } from '../../src/tariffs/parsers/generic'
 import { TariffsSchema, type Tariffs } from '../../src/tariffs/schema'
 
-const tariffs = (): Tariffs => JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
+const tariffs = (): Tariffs => JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8'))
 const airtelHtml = readFileSync('tests/fixtures/airtel.html', 'utf8')
 const mvolaHtml = readFileSync('tests/fixtures/mvola.html', 'utf8')
 

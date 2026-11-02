@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { buildHistory } from '../../scripts/build-history'
 import type { Tariffs } from '../../src/tariffs/schema'
 
-const base = JSON.parse(readFileSync('public/tarifs.json', 'utf8')) as Tariffs
+const base = JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8')) as Tariffs
 const withFee = (fee: number): Tariffs => {
   const t = structuredClone(base)
   ;(t.operators.mvola.fees.withdrawal![0] as { fee: number }).fee = fee

@@ -5,7 +5,7 @@ import { optimizeSplit } from '../../src/engine/optimize'
 import type { SplitOpts } from '../../src/engine/types'
 import type { FeeTable, Tariffs } from '../../src/tariffs/schema'
 
-const tariffs: Tariffs = JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
+const tariffs: Tariffs = JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8'))
 const mv = tariffs.operators.mvola.fees
 const opts = { step: 1000, maxTx: 5, minTx: 100, maxTxAmount: 20000000 }
 

@@ -4,7 +4,7 @@ import { monthlyCost } from '../../src/engine/monthly'
 import { optimizeSplit } from '../../src/engine/optimize'
 import { OPERATORS, type Tariffs } from '../../src/tariffs/schema'
 
-const t: Tariffs = JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
+const t: Tariffs = JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8'))
 const o = { step: 1000, maxTx: 5 }
 
 describe('monthlyCost', () => {

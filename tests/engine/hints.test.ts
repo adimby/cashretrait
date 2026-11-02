@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { tierHint } from '../../src/engine/hints'
 import type { Tariffs } from '../../src/tariffs/schema'
 
-const t: Tariffs = JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
+const t: Tariffs = JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8'))
 const w = t.operators.mvola.fees.withdrawal!
 
 describe('tierHint', () => {
