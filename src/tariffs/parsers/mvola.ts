@@ -1,7 +1,7 @@
 import { load } from 'cheerio'
-import type { FeeTable, OperationKey, Operator } from '../schema'
-import { ParseError, checkContiguous, checkRowWidths, findColumn, normalize, parseAmount, requireTiers, rowsToTable } from './common'
-import { parseGenericTables, type GenericTable } from './generic'
+import type { FeeTable, OperationKey, Operator } from '../schema.js'
+import { ParseError, checkContiguous, checkRowWidths, findColumn, normalize, parseAmount, requireTiers, rowsToTable } from './common.js'
+import { parseGenericTables, type GenericTable } from './generic.js'
 
 export const MVOLA_URL = 'https://mvola.mg/tarifs/'
 

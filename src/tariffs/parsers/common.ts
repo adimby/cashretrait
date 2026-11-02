@@ -1,4 +1,4 @@
-import type { FeeTable } from '../schema'
+import type { FeeTable } from '../schema.js'
 
 export class ParseError extends Error {
   constructor(message: string) {

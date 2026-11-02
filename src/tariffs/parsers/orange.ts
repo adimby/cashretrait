@@ -1,5 +1,5 @@
-import type { FeeTable, OperationKey, Operator } from '../schema'
-import { ParseError, checkContiguous, isDash, normalize, parseAmount, rowsToTable, tryParseAmount } from './common'
+import type { FeeTable, OperationKey, Operator } from '../schema.js'
+import { ParseError, checkContiguous, isDash, normalize, parseAmount, rowsToTable, tryParseAmount } from './common.js'
 
 export const ORANGE_URL = 'https://www.orange.mg/omg-b2c/resources/other/PLAN_TARIFS_ORANGE_MONEY_MAJ_1_A4.pdf'
 

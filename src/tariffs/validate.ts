@@ -1,5 +1,5 @@
-import { OPERATIONS, OPERATORS, TariffsSchema } from './schema'
-import type { FeeTable, Operator, OperatorId, OperationKey, Tariffs, Tier } from './schema'
+import { OPERATIONS, OPERATORS, TariffsSchema } from './schema.js'
+import type { FeeTable, Operator, OperatorId, OperationKey, Tariffs, Tier } from './schema.js'
 
 export type Validation = { status: 'ok' | 'suspect' | 'invalid'; reasons: string[] }
 export type FeeChange = {

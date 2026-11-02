@@ -1,6 +1,6 @@
-import type { FeeTable, OperationKey, Operator } from '../schema'
-import { ParseError, checkContiguous, checkRowWidths, findColumn, normalize, parseAmount, requireTiers, rowsToTable } from './common'
-import { parseGenericTables } from './generic'
+import type { FeeTable, OperationKey, Operator } from '../schema.js'
+import { ParseError, checkContiguous, checkRowWidths, findColumn, normalize, parseAmount, requireTiers, rowsToTable } from './common.js'
+import { parseGenericTables } from './generic.js'
 
 export const AIRTEL_URL = 'https://www.airtel.mg/airtelmoney/transaction_fees'
 
