@@ -2,11 +2,19 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>CashRetrait</title>
+    <meta name="description" content="Calculez la façon la moins chère de retirer ou d'envoyer de l'argent avec MVola, Airtel Money et Orange Money. Calcul indicatif, application indépendante." />
+    <meta name="theme-color" content="#1c2f86" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14205a" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="preload" href="/tarifs.json" as="fetch" crossorigin="anonymous" />
   </head>
   <body>
     <div id="app"></div>
+    <noscript>CashRetrait a besoin de JavaScript pour calculer les frais.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
