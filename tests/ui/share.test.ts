@@ -1,0 +1,85 @@
+import { describe, it, expect, afterEach, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { TariffsSchema } from '../../src/tariffs/schema'
+import { optimizeSplit } from '../../src/engine/optimize'
+import { inverse, maxWithdrawable } from '../../src/engine/inverse'
+import { optsFor } from '../../src/engine/limits'
+import { shareText, share } from '../../src/ui/share'
+import { formatAr } from '../../src/ui/format'
+import type { SplitOk } from '../../src/engine/types'
+
+const T = TariffsSchema.parse(JSON.parse(readFileSync('public/tarifs.json', 'utf8')))
+const mv = T.operators.mvola.fees
+const opts1 = optsFor(T, 'mvola', { step: 1, maxTx: 5 })
+const ar = (n: string) => n.replace(/ /g, ' ') + ' Ar'
+
+describe('shareText', () => {
+  it('withdraw 1 000 001 MVola (step 1): amounts actually produced, total, savings, indicative note', () => {
+    const r = optimizeSplit(mv.withdrawal!, 1000001, opts1) as SplitOk
+    expect(r.ok).toBe(true)
+    // Not [1 000 000, 1]: 1 Ar is below MVola's minimum transaction (100 Ar).
+    expect(r.transactions).toHaveLength(2)
+    expect(r.total).toBe(8900)
+    expect(r.transactions.every((x) => x.amount >= 100)).toBe(true)
+    const s = shareText('withdraw', r, 'fr', { op: 'mvola' })
+    expect(s).toContain(ar('1 000 001'))
+    for (const x of r.transactions) expect(s).toContain(formatAr(x.amount))
+    expect(s).not.toContain('(frais 0')
+    expect(s).toContain(ar('8 900'))
+    expect(s).toContain(ar('5 800')) // savings vs 14 700 in one go
+    expect(s).toContain('MVola')
+    expect(s).toContain('Calcul indicatif')
+    expect(s).not.toMatch(/\*\d|#\s*$|tel:/m)
+  })
+  it('is translated in mg', () => {
+    const r = optimizeSplit(mv.withdrawal!, 1000001, opts1) as SplitOk
+    const fr = shareText('withdraw', r, 'fr')
+    const mg = shareText('withdraw', r, 'mg')
+    expect(mg).not.toBe(fr)
+    expect(mg).toContain(ar('8 900'))
+  })
+  it('receive: send amount, both splits and total', () => {
+    const r = inverse({ net: 100000, withdrawTable: mv.withdrawal!, transferTable: mv.transfer_same!, includeWithdrawalFee: true, opts: optsFor(T, 'mvola', { step: 100, maxTx: 5 }) })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    const s = shareText('receive', r, 'fr')
+    expect(s).toContain(ar('100 000'))
+    expect(s).toContain(ar(String(r.send).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')))
+    expect(s).toContain('Calcul indicatif')
+  })
+  it('max: amount and remaining balance', () => {
+    const r = maxWithdrawable(mv.withdrawal!, 100000, optsFor(T, 'mvola', { step: 1000, maxTx: 5 }))
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    const s = shareText('max', r, 'fr')
+    expect(s).toContain(ar(String(r.amount).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')))
+    expect(s).toContain(ar('100 000'))
+  })
+})
+
+describe('share', () => {
+  afterEach(() => vi.unstubAllGlobals())
+  it('without navigator.share copies to the clipboard', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('navigator', { clipboard: { writeText } })
+    await expect(share('hello')).resolves.toBe('copied')
+    expect(writeText).toHaveBeenCalledWith('hello')
+  })
+  it('uses navigator.share when present', async () => {
+    const s = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('navigator', { share: s, clipboard: { writeText: vi.fn() } })
+    await expect(share('x')).resolves.toBe('shared')
+    expect(s).toHaveBeenCalledWith({ text: 'x' })
+  })
+  it('falls back to clipboard when share throws (not a cancel)', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('navigator', { share: vi.fn().mockRejectedValue(new Error('nope')), clipboard: { writeText } })
+    await expect(share('x')).resolves.toBe('copied')
+  })
+  it('fails cleanly with nothing available', async () => {
+    vi.stubGlobal('navigator', {})
+    await expect(share('x')).resolves.toBe('failed')
+    vi.stubGlobal('navigator', { clipboard: { writeText: vi.fn().mockRejectedValue(new Error('denied')) } })
+    await expect(share('x')).resolves.toBe('failed')
+  })
+})

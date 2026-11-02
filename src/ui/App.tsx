@@ -8,6 +8,7 @@ import { Placeholder } from './screens/Placeholder'
 import { Plus } from './screens/Plus'
 import { Settings } from './screens/Settings'
 import { About } from './screens/About'
+import { Calculate } from './screens/Calculate'
 
 function Screen({ path }: { path: string }) {
   switch (path) {
@@ -19,7 +20,7 @@ function Screen({ path }: { path: string }) {
     case '/plus/apropos': return <About />
     default:
       return path.startsWith('/plus') ? <Plus /> : path.startsWith('/comparer') ? <Placeholder id="comparer" />
-        : path.startsWith('/tarifs') ? <Placeholder id="tarifs" /> : <Placeholder id="calculer" />
+        : path.startsWith('/tarifs') ? <Placeholder id="tarifs" /> : <Calculate />
   }
 }
 

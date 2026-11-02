@@ -215,6 +215,18 @@ Native radios inside a panel; selected segment painted ultramarine (dark: light 
 ### Operator badge
 Neutral monogram (MV / AM / OM) in a 36×28 outlined plate + name. Same colour for all operators.
 
+### Amount field (Calculer)
+The typed amount is set like a plate numeral (Barlow Condensed 2.25rem, tabular) in a 64 px surface box with a 2 px accent outline and a faded « Ar ». Numeric keypad (`inputmode="numeric"`), spaces accepted, formatted as you type with the caret kept. Below it, four quick-amount plates (10 000 / 50 000 / 100 000 / 500 000); the active one is painted as a selected segment.
+
+### Result card (the hero)
+« Meilleure option »: a surface panel with a 2 px accent-line border (the selected answer). Transactions are numbered rows read like a fare board line: amount on a medium plate, a dotted leader, then « frais » and a small fee plate. A rule, then « Frais au total » on a large plate; then the savings in Savings Green with a check icon. Receive and Max modes lead with the amount to send / withdraw on a large plate. Share and Favori sit in two equal outlined buttons at the foot. Alternatives follow as a board list (badge, path, extra cost, total plate).
+
+### Fee staircase
+Inline SVG, single series: accent-line 2 px step line with a 10 % wash, hairline grid, condensed tabular ticks. Ink dot + hairline at the amount paid in one go, Savings Green dots at the split transactions (legend for both). The touched tier gets an 8 % band and its range/fee is read out below; a « Voir la grille en tableau » disclosure gives the same tiers as a table.
+
+### Near-tier hint
+Surface notice with a bulb icon, shown only when a slightly lower amount still saves ≥ 20 % against the best split; one outlined button applies it.
+
 ### Disclaimer
 Small faded text above a rule at the end of every screen: « Calcul indicatif basé sur les grilles publiques des opérateurs. Application indépendante, non affiliée à MVola, Airtel ou Orange. »
 

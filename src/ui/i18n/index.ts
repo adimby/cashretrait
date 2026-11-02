@@ -12,6 +12,11 @@ export const lang: Signal<Lang> = signal<Lang>('fr')
 /** Translate `key` in the current language; `{name}` placeholders are replaced from `vars`.
  *  Falls back to French, then to the key itself. Reading `lang.value` subscribes components. */
 export function t(key: string, vars?: Record<string, string | number>): string {
-  const s = dicts[lang.value][key] ?? dicts.fr[key] ?? key
+  return tl(lang.value, key, vars)
+}
+
+/** Same as `t` in an explicit language (share text, tests). Does not subscribe. */
+export function tl(l: Lang, key: string, vars?: Record<string, string | number>): string {
+  const s = dicts[l][key] ?? dicts.fr[key] ?? key
   return vars ? s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m)) : s
 }
