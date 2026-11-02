@@ -9,7 +9,8 @@
   "nav.tarifs": "Tarifs",
   "nav.plus": "Plus",
   "header.tariffsOf": "Tarifs du {date}",
-  "header.stale": "Hors ligne, tarifs du {date}",
+  "header.outdated": "Tarifs du {date} (non à jour)",
+  "header.offline": "Hors ligne, tarifs du {date}",
   "header.loading": "Chargement des tarifs…",
   "header.error": "Tarifs indisponibles. Vérifiez votre connexion puis réessayez.",
   "action.retry": "Réessayer",
@@ -43,12 +44,13 @@
   "about.free": "Gratuit et sans compte.",
   "about.sources": "Sources officielles",
   "about.sourceOf": "Grille {op}",
+  "about.source.pdf": "PDF",
+  "about.source.html": "Page web",
   "about.updated": "Tarifs mis à jour le {date}",
   "about.version": "Version {v}",
   "about.mgReview": "La traduction malgache est en cours de relecture.",
   "op.mvola": "MVola",
   "op.airtel": "Airtel Money",
   "op.orange": "Orange Money",
-  "disclaimer": "Calcul indicatif basé sur les grilles publiques des opérateurs. Application indépendante, non affiliée à MVola, Airtel ou Orange.",
-  "test.vars": "Avec {montant}"
+  "disclaimer": "Calcul indicatif basé sur les grilles publiques des opérateurs. Application indépendante, non affiliée à MVola, Airtel ou Orange."
 }

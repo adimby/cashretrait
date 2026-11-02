@@ -15,6 +15,7 @@ export default defineConfig({
     preact(),
     VitePWA({
       registerType: 'autoUpdate',
+      includeManifestIcons: false, // icons are already matched by globPatterns
       injectRegister: 'auto',
       manifest: {
         name: 'CashRetrait',
@@ -38,8 +39,10 @@ export default defineConfig({
         // App shell only. Tariff JSON is runtime-cached (below); the admin is never cached.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,txt}'],
         globIgnores: ['**/zadmin*', '**/zadmin/**', '**/api/**', '**/tarifs*.json'],
+        // Hash-routed app: only the root falls back to the shell, so the admin page and
+        // /api/* are never served index.html (and their names never appear in sw.js).
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/zadmin/, /^\/api\//],
+        navigateFallbackAllowlist: [/^\/$/, /^\/index\.html$/],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {

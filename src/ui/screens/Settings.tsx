@@ -2,6 +2,7 @@ import { t, LANGS } from '../i18n'
 import { settings, updateSettings, STEPS, MAX_TX_MIN, MAX_TX_MAX } from '../state/settings'
 import { formatAr } from '../format'
 import { Icon } from '../components/Icon'
+import { Plate } from '../components/Plate'
 import { BackLink } from './Plus'
 
 const LANG_NAMES = { fr: 'Français', mg: 'Malagasy' } as const
@@ -46,8 +47,8 @@ export function Settings() {
             disabled={s.maxTx <= MAX_TX_MIN} onClick={() => updateSettings({ maxTx: s.maxTx - 1 })}>
             <Icon name="minus" />
           </button>
-          <output class="plate plate-l stepper-value" aria-live="polite" aria-labelledby="maxtx-label">
-            <span class="plate-num">{s.maxTx}</span>
+          <output class="stepper-value" aria-live="polite" aria-labelledby="maxtx-label">
+            <Plate size="l">{s.maxTx}</Plate>
           </output>
           <button type="button" class="stepper-btn" aria-label={t('settings.maxTx.more')}
             disabled={s.maxTx >= MAX_TX_MAX} onClick={() => updateSettings({ maxTx: s.maxTx + 1 })}>

@@ -29,7 +29,7 @@ export function About() {
             {tf ? (
               <a class="board-row" href={tf.operators[op].source.url} target="_blank" rel="noopener noreferrer">
                 <OperatorBadge op={op} />
-                <span class="board-row-desc board-row-fill">{tf.operators[op].source.type === 'pdf' ? 'PDF' : 'Web'}</span>
+                <span class="board-row-desc board-row-fill">{t(`about.source.${tf.operators[op].source.type}`)}</span>
                 <span class="board-row-end"><Icon name="external" size={20} /></span>
               </a>
             ) : (

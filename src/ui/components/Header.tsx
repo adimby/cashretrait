@@ -3,6 +3,7 @@ import { formatDate } from '../format'
 import { tariffs, tariffsStale } from '../state/tariffs'
 import { tariffsError, retryTariffs } from '../state/boot'
 import { Icon } from './Icon'
+import { online, tariffStatus } from '../state/network'
 
 /** Renders 'Tarifs du {date}' with the date set on a price plate (the signature element). */
 function DateLabel({ template, date }: { template: string; date: string }) {
@@ -18,6 +19,7 @@ function DateLabel({ template, date }: { template: string; date: string }) {
 
 export function Header() {
   const tf = tariffs.value
+  const status = tariffStatus(tariffsStale.value, online.value)
   return (
     <header class="appbar">
       <div class="appbar-row">
@@ -25,9 +27,9 @@ export function Header() {
           <span class="wordmark-cash">Cash</span><span class="wordmark-retrait">Retrait</span>
         </a>
         {tf ? (
-          <span class={`appbar-status${tariffsStale.value ? ' is-stale' : ''}`} role="status">
-            {tariffsStale.value && <Icon name="offline" size={18} />}
-            <DateLabel template={t(tariffsStale.value ? 'header.stale' : 'header.tariffsOf')} date={formatDate(tf.updatedAt)} />
+          <span class={`appbar-status is-${status}`} role="status">
+            {status === 'offline' && <Icon name="offline" size={18} />}
+            <DateLabel template={t(`header.${status === 'fresh' ? 'tariffsOf' : status}`)} date={formatDate(tf.updatedAt)} />
           </span>
         ) : !tariffsError.value ? (
           <span class="appbar-status" role="status">{t('header.loading')}</span>

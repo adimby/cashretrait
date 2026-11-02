@@ -10,7 +10,8 @@
   "nav.tarifs": "Sarany",
   "nav.plus": "Hafa",
   "header.tariffsOf": "Tarifa {date}",
-  "header.stale": "Tsy misy tambajotra, tarifa {date}",
+  "header.outdated": "Tarifa {date} (tsy vaovao)",
+  "header.offline": "Tsy misy tambajotra, tarifa {date}",
   "header.loading": "Maka ny tarifa…",
   "header.error": "Tsy azo ny tarifa. Hamarino ny fifandraisanao dia andramo indray.",
   "action.retry": "Andramo indray",
@@ -44,12 +45,13 @@
   "about.free": "Maimaimpoana ary tsy mila kaonty.",
   "about.sources": "Loharano ofisialy",
   "about.sourceOf": "Tabilao {op}",
+  "about.source.pdf": "PDF",
+  "about.source.html": "Pejy web",
   "about.updated": "Tarifa navaozina ny {date}",
   "about.version": "Dikan-teny {v}",
   "about.mgReview": "Mbola hojeren'ny mpiteny malagasy ity dikan-teny ity.",
   "op.mvola": "MVola",
   "op.airtel": "Airtel Money",
   "op.orange": "Orange Money",
-  "disclaimer": "Kajy tondro fotsiny, mifototra amin'ny tabilaon'ny sarany navoakan'ireo mpandraharaha. Fampiharana tsy miankina, tsy misy ifandraisany amin'ny MVola, Airtel na Orange.",
-  "test.vars": "Miaraka amin'ny {montant}"
+  "disclaimer": "Kajy tondro fotsiny, mifototra amin'ny tabilaon'ny sarany navoakan'ireo mpandraharaha. Fampiharana tsy miankina, tsy misy ifandraisany amin'ny MVola, Airtel na Orange."
 }

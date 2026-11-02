@@ -17,8 +17,12 @@ describe('i18n', () => {
   it('no empty strings', () => {
     for (const d of [fr, mg] as Record<string, string>[]) for (const k of keys(d)) expect(d[k].trim()).not.toBe('')
   })
-  it('replaces {montant}', () => {
-    expect(t('test.vars', { montant: '25 000 Ar' })).toBe('Avec 25 000 Ar')
+  it('replaces {placeholders}', () => {
+    expect(t('header.tariffsOf', { date: '02/11/2026' })).toBe('Tarifs du 02/11/2026')
+    expect(t('about.version', { v: '1.2.3' })).toBe('Version 1.2.3')
+  })
+  it('leaves unknown placeholders untouched', () => {
+    expect(t('header.tariffsOf', { other: 1 })).toBe('Tarifs du {date}')
   })
   it('follows lang signal', () => {
     lang.value = 'mg'
