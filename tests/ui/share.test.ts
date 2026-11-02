@@ -47,6 +47,26 @@ describe('shareText', () => {
     expect(s).toContain(ar(String(r.send).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')))
     expect(s).toContain('Calcul indicatif')
   })
+  it('receive, withdrawal fee not included: fee as information, only what the recipient can take out', () => {
+    const o = optsFor(T, 'mvola', { step: 1000, maxTx: 5 })
+    const r = inverse({ net: 100000, withdrawTable: mv.withdrawal!, transferTable: mv.transfer_same!, includeWithdrawalFee: false, opts: o })
+    if (!r.ok || !r.takeOut || !r.takeOut.ok) throw new Error('expected a take-out')
+    const s = shareText('receive', r, 'fr')
+    // The full-net withdrawal (100 000, frais 1 900) is never listed as a transaction to do.
+    expect(s).not.toContain(`${ar('100 000')} (frais ${ar('1 900')})`)
+    expect(s).toContain(`Pour retirer ${ar('100 000')}, il lui faudrait aussi ${ar('1 900')} de frais`)
+    expect(s).toContain(`Il peut retirer au plus ${ar('98 000')}`)
+    expect(r.takeOut.amount + r.takeOut.withdrawal.total + r.takeOut.remaining).toBe(100000)
+    expect(s).toContain(`Frais d'envoi : ${ar(String(r.transfer.total).replace(/\B(?=(\d{3})+(?!\d))/g, ' '))}`)
+    expect(s).not.toContain('Il fait')
+    expect(shareText('receive', r, 'mg')).toContain(ar('98 000'))
+  })
+  it('receive, fee not included, nothing withdrawable → says so', () => {
+    const r = inverse({ net: 150, withdrawTable: mv.withdrawal!, transferTable: mv.transfer_same!, includeWithdrawalFee: false, opts: optsFor(T, 'mvola', { step: 100, maxTx: 5 }) })
+    if (!r.ok) throw new Error(r.reason)
+    expect(r.takeOut).toEqual({ ok: false, reason: 'insufficient' })
+    expect(shareText('receive', r, 'fr')).toContain('il ne peut rien retirer')
+  })
   it('max: amount and remaining balance', () => {
     const r = maxWithdrawable(mv.withdrawal!, 100000, optsFor(T, 'mvola', { step: 1000, maxTx: 5 }))
     expect(r.ok).toBe(true)

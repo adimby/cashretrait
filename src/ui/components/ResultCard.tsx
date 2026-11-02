@@ -81,18 +81,43 @@ export function ResultCard({ mode, best, notIncl, canSplit, actions }: {
     )
   } else if (mode === 'receive') {
     const r = best.result as Ok<InverseResult>
-    const savings = r.transfer.savings + r.withdrawal.savings
-    body = (
-      <>
-        <PathLine kind={best.kind} to={best.to} />
-        <Lead label={t('result.send')} amount={r.send} />
-        <TxList title={count('result.do.send', r.transfer.transactions.length)} txs={r.transfer.transactions} />
-        <TxList title={count('result.recipient', r.withdrawal.transactions.length)} txs={r.withdrawal.transactions} />
-        <Total amount={r.total} />
-        {savings > 0 && <Savings savings={savings} single={null} n={2} />}
-        {notIncl && <p class="result-note">{t('result.notIncl')}</p>}
-      </>
-    )
+    const take = r.takeOut
+    if (!take) {
+      const savings = r.transfer.savings + r.withdrawal.savings
+      body = (
+        <>
+          <PathLine kind={best.kind} to={best.to} />
+          <Lead label={t('result.send')} amount={r.send} />
+          <TxList title={count('result.do.send', r.transfer.transactions.length)} txs={r.transfer.transactions} />
+          <TxList title={count('result.recipient', r.withdrawal.transactions.length)} txs={r.withdrawal.transactions} />
+          <Total amount={r.total} />
+          {savings > 0 && <Savings savings={savings} single={null} n={2} />}
+        </>
+      )
+    } else {
+      // Fee not included: the recipient holds only the net, so the full-net withdrawal is shown as
+      // information and only what he can really take out is listed as plates.
+      const net = r.withdrawal.transactions.reduce((a, x) => a + x.amount, 0)
+      body = (
+        <>
+          <PathLine kind={best.kind} to={best.to} />
+          <Lead label={t('result.send')} amount={r.send} />
+          <TxList title={count('result.do.send', r.transfer.transactions.length)} txs={r.transfer.transactions} />
+          <Total amount={r.transfer.total} label={t('result.sendFees')} />
+          {r.transfer.savings > 0 && <Savings savings={r.transfer.savings} single={null} n={2} />}
+          {notIncl && <p class="result-note">{t('result.notIncl')}</p>}
+          <p class="result-note" data-testid="notincl-fee">{t('result.notIncl.fee', { net: formatAr(net), fee: formatAr(r.withdrawal.total) })}</p>
+          {take.ok
+            ? (
+              <>
+                <TxList title={t('result.notIncl.canTake', { amount: formatAr(take.amount) })} txs={take.withdrawal.transactions} />
+                <p class="result-note">{t('result.notIncl.left', { amount: formatAr(take.remaining) })}</p>
+              </>
+            )
+            : <p class="result-note">{t('result.notIncl.none')}</p>}
+        </>
+      )
+    }
   } else {
     const r = best.result as Ok<MaxResult>
     body = (
@@ -118,8 +143,8 @@ function Lead({ label, amount }: { label: string; amount: number }) {
   return <p class="result-lead"><span class="result-lead-label">{label}</span><Plate amount={amount} size="l" /></p>
 }
 
-function Total({ amount }: { amount: number }) {
-  return <p class="result-total"><span class="result-total-label">{t('result.total')}</span><Plate amount={amount} size="l" /></p>
+function Total({ amount, label }: { amount: number; label?: string }) {
+  return <p class="result-total"><span class="result-total-label">{label ?? t('result.total')}</span><Plate amount={amount} size="l" /></p>
 }
 
 /** Next-cheapest ways, secondary: one row each with its total and the extra cost. */

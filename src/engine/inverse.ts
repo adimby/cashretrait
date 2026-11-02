@@ -12,7 +12,21 @@ export type InverseInput = {
   /** Limits of the withdrawing operator, if different from the sender's (defaults to opts). */
   withdrawOpts?: SplitOpts
 }
-export type InverseResult = { ok: true; send: number; transfer: SplitOk; withdrawal: SplitOk; total: number } | Fail
+export type InverseResult =
+  | {
+      ok: true
+      send: number
+      transfer: SplitOk
+      /** Optimal withdrawal of the full `net` (its cost R is in `total`, spec §5.2). */
+      withdrawal: SplitOk
+      total: number
+      /**
+       * Only when the withdrawal fee is not included: the recipient holds exactly `net`, so he cannot
+       * execute `withdrawal` (he would also need R). This is what he can really take out of `net`.
+       */
+      takeOut?: MaxResult
+    }
+  | Fail
 
 /** Amount to send so the recipient gets `net` (spec §5.2). */
 export function inverse(i: InverseInput): InverseResult {
@@ -21,7 +35,9 @@ export function inverse(i: InverseInput): InverseResult {
   const send = i.includeWithdrawalFee ? i.net + withdrawal.total : i.net
   const transfer = optimizeSplit(i.transferTable, send, i.opts)
   if (!transfer.ok) return transfer
-  return { ok: true, send, transfer, withdrawal, total: transfer.total + withdrawal.total }
+  const total = transfer.total + withdrawal.total
+  if (i.includeWithdrawalFee) return { ok: true, send, transfer, withdrawal, total }
+  return { ok: true, send, transfer, withdrawal, total, takeOut: maxWithdrawable(i.withdrawTable, i.net, i.withdrawOpts ?? i.opts) }
 }
 
 export type MaxResult = { ok: true; amount: number; withdrawal: SplitOk; remaining: number } | Fail

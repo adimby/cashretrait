@@ -34,6 +34,13 @@ describe('inverse', () => {
     if (!tr.ok) throw new Error(tr.reason)
     expect(r.send).toBe(100000)
     expect(r.total).toBe(tr.total + 1900)
+    // The recipient holds only 100 000: what he can really withdraw is maxWithdrawable(100 000).
+    expect(r.takeOut).toEqual(maxWithdrawable(mv.withdrawal!, 100000, opts))
+    expect(r.takeOut!.ok && r.takeOut!.amount + r.takeOut!.withdrawal.total).toBeLessThanOrEqual(100000)
+  })
+  it('fee included → no takeOut (the recipient can execute the withdrawal)', () => {
+    const r = inverse({ net: 100000, withdrawTable: mv.withdrawal!, transferTable: mv.transfer_same!, includeWithdrawalFee: true, opts })
+    expect(r.ok && r.takeOut).toBeUndefined()
   })
   it('propagates unavailable withdrawal', () => {
     const r = inverse({ net: 100000, withdrawTable: [], transferTable: mv.transfer_same!, includeWithdrawalFee: true, opts })

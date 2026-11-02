@@ -32,8 +32,19 @@ export function shareText(mode: CalcMode, result: SplitOk | InverseResult | MaxR
     if (ctx.path) lines.push(ctx.path)
     lines.push(t('share.send', { amount: formatAr(r.send) }))
     lines.push(count('result.do.send', r.transfer.transactions.length), ...txLines(r.transfer.transactions))
-    lines.push(count('result.recipient', r.withdrawal.transactions.length), ...txLines(r.withdrawal.transactions))
-    lines.push(t('share.total', { amount: formatAr(r.total) }))
+    if (!r.takeOut) {
+      lines.push(count('result.recipient', r.withdrawal.transactions.length), ...txLines(r.withdrawal.transactions))
+      lines.push(t('share.total', { amount: formatAr(r.total) }))
+    } else {
+      // Fee not included: never list a withdrawal the recipient cannot pay for.
+      lines.push(t('share.sendFees', { amount: formatAr(r.transfer.total) }))
+      lines.push(t('result.notIncl.fee', { net: formatAr(sum(r.withdrawal.transactions)), fee: formatAr(r.withdrawal.total) }))
+      const k = r.takeOut
+      if (k.ok) {
+        lines.push(t('result.notIncl.canTake', { amount: formatAr(k.amount) }) + ' :', ...txLines(k.withdrawal.transactions))
+        lines.push(t('result.notIncl.left', { amount: formatAr(k.remaining) }))
+      } else lines.push(t('result.notIncl.none'))
+    }
   } else {
     const r = result as Ok<MaxResult>
     lines.push(t('share.title.max', { amount: formatAr(r.amount + r.withdrawal.total + r.remaining) }) + op)
