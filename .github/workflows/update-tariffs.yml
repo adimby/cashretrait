@@ -28,19 +28,33 @@ jobs:
             core.setOutput('ok', String(report.some((o) => o.status === 'ok')))
             core.setOutput('suspect', String(report.some((o) => o.status === 'suspect')))
       - name: Test and commit automatic changes to main
-        if: steps.report.outputs.ok == 'true'
+        id: main
+        if: ${{ steps.report.outputs.ok == 'true' && github.ref == 'refs/heads/main' }}
         run: |
           npm test
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/tarifs.json
           git commit -m "chore(tarifs): mise à jour automatique"
-          git push origin HEAD:main
+          git pull --rebase origin main || { sleep 5; git rebase --abort || true; git pull --rebase origin main; }
+          git push origin HEAD:main || { sleep 5; git pull --rebase origin main && git push origin HEAD:main; }
+      - name: Choose review branch
+        id: pick
+        if: ${{ !cancelled() && steps.report.outputs.suspect == 'true' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo
+            const open = await github.paginate(github.rest.pulls.list, { owner, repo, state: 'open', per_page: 100 })
+            const existing = open.find((p) => p.head.ref.startsWith('tarifs/auto-') && p.head.repo.full_name === `${owner}/${repo}`)
+            const d = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+            core.setOutput('name', existing ? existing.head.ref : `tarifs/auto-${d}`)
       - name: Push suspect changes to a review branch
         id: branch
-        if: steps.report.outputs.suspect == 'true'
+        if: ${{ !cancelled() && steps.report.outputs.suspect == 'true' && steps.pick.outcome == 'success' }}
+        env:
+          BRANCH: ${{ steps.pick.outputs.name }}
         run: |
-          BRANCH="tarifs/auto-$(date -u +%Y%m%d)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$BRANCH"
@@ -48,29 +62,49 @@ jobs:
           git add public/tarifs.json
           git commit -m "chore(tarifs): mise à jour à vérifier"
           git push --force origin "$BRANCH"
-          echo "name=$BRANCH" >> "$GITHUB_OUTPUT"
       - name: Open pull request and issues
+        id: notify
+        if: ${{ always() && steps.report.conclusion == 'success' }}
         uses: actions/github-script@v7
         env:
-          BRANCH: ${{ steps.branch.outputs.name }}
+          BRANCH: ${{ steps.branch.outcome == 'success' && steps.pick.outputs.name || '' }}
         with:
           script: |
             const fs = require('fs')
             const { owner, repo } = context.repo
             const report = JSON.parse(fs.readFileSync('update-report.json', 'utf8'))
-            const branch = process.env.BRANCH
-            if (branch) {
-              const open = await github.rest.pulls.list({ owner, repo, state: 'open', head: `${owner}:${branch}` })
-              const body = fs.readFileSync('update-summary.md', 'utf8')
-              if (open.data.length === 0) {
-                await github.rest.pulls.create({ owner, repo, head: branch, base: 'main', title: 'Mise à jour des tarifs à vérifier', body })
-              } else {
-                await github.rest.pulls.update({ owner, repo, pull_number: open.data[0].number, body })
+            let failed = false
+            // Issues first, so a PR failure never hides them.
+            const failures = report.filter((x) => x.status === 'failed')
+            if (failures.length) {
+              const issues = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: 'open', per_page: 100 })
+              for (const o of failures) {
+                const title = `Mise à jour tarifs échouée : ${o.operator}`
+                if (issues.some((i) => !i.pull_request && i.title === title)) continue
+                try {
+                  await github.rest.issues.create({ owner, repo, title, body: o.reasons.map((r) => `- ${r}`).join('\n') || 'Échec sans détail.' })
+                } catch (e) {
+                  core.error(`Issue: ${e.message}`)
+                  failed = true
+                }
               }
             }
-            for (const o of report.filter((x) => x.status === 'failed')) {
-              const title = `Mise à jour tarifs échouée : ${o.operator}`
-              const issues = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: 'open', per_page: 100 })
-              if (issues.some((i) => !i.pull_request && i.title === title)) continue
-              await github.rest.issues.create({ owner, repo, title, body: o.reasons.map((r) => `- ${r}`).join('\n') || 'Échec sans détail.' })
+            const branch = process.env.BRANCH
+            if (branch) {
+              try {
+                const body = fs.readFileSync('update-summary.md', 'utf8')
+                const open = await github.rest.pulls.list({ owner, repo, state: 'open', head: `${owner}:${branch}` })
+                if (open.data.length === 0) {
+                  await github.rest.pulls.create({ owner, repo, head: branch, base: 'main', title: 'Mise à jour des tarifs à vérifier', body })
+                } else {
+                  await github.rest.pulls.update({ owner, repo, pull_number: open.data[0].number, body })
+                }
+              } catch (e) {
+                core.error(`PR: ${e.message}`)
+                failed = true
+              }
             }
+            if (failed) core.setFailed('PR or Issue creation failed')
+      - name: Fail job if a previous step failed
+        if: ${{ always() && (steps.report.outcome == 'failure' || steps.main.outcome == 'failure' || steps.pick.outcome == 'failure' || steps.branch.outcome == 'failure' || steps.notify.outcome == 'failure') }}
+        run: exit 1

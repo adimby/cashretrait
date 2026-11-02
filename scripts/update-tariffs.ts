@@ -62,10 +62,16 @@ const httpFetcher: Fetcher = async (url) => {
 function summary(outcomes: UpdateOutcome[], tariffs: Tariffs): string {
   const lines: string[] = ['# Mise à jour des tarifs', '']
   for (const o of outcomes) {
-    if (o.status === 'unchanged') continue
+    if (o.status === 'unchanged' || o.status === 'failed') continue
     lines.push(`## ${tariffs.operators[o.operator].name} — ${o.status}`, '')
     for (const c of o.changes) lines.push(`- ${formatChange(c, 'fr', tariffs)}`)
     if (o.reasons.length) lines.push('', 'Raisons :', ...o.reasons.map((r) => `- ${r}`))
+    lines.push('')
+  }
+  const failed = outcomes.filter((o) => o.status === 'failed')
+  if (failed.length) {
+    lines.push('## Échecs', '')
+    for (const o of failed) lines.push(`- ${tariffs.operators[o.operator].name} :`, ...o.reasons.map((r) => `  - ${r}`))
     lines.push('')
   }
   return lines.join('\n')
