@@ -30,6 +30,12 @@ describe('i18n', () => {
     lang.value = 'fr'
     expect(t('nav.calculer')).toBe('Calculer')
   })
+  it('tariff date reads « Modifiée le » (updatedAt only changes with the fees), sender-paid note exists', () => {
+    expect(t('trf.modified', { date: '02/11/2026' })).toBe('Modifiée le 02/11/2026')
+    expect(JSON.stringify(fr)).not.toMatch(/Vérifiée/)
+    expect((mg as Record<string, string>)['trf.modified']).toContain('{date}')
+    expect(t('result.senderPaid')).toMatch(/expéditeur/)
+  })
   it('returns the key for unknown keys', () => {
     expect(t('nope.missing')).toBe('nope.missing')
   })

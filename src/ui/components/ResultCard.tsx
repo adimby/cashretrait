@@ -65,8 +65,8 @@ function Savings({ savings, single, n, canSplit = true }: { savings: number; sin
 }
 
 /** The hero: the cheapest way, as plates, with total and savings. */
-export function ResultCard({ mode, best, notIncl, canSplit, actions }: {
-  mode: CalcMode; best: Option; notIncl?: boolean; canSplit: boolean; actions: ComponentChildren
+export function ResultCard({ mode, best, notIncl, senderPaid, canSplit, actions }: {
+  mode: CalcMode; best: Option; notIncl?: boolean; senderPaid?: boolean; canSplit: boolean; actions: ComponentChildren
 }) {
   let body: ComponentChildren
   if (mode === 'withdraw' || mode === 'send') {
@@ -77,6 +77,7 @@ export function ResultCard({ mode, best, notIncl, canSplit, actions }: {
         <TxList title={count(`result.do.${mode}`, r.transactions.length)} txs={r.transactions} />
         <Total amount={r.total} />
         <Savings savings={r.savings} single={r.single} n={r.transactions.length} canSplit={canSplit} />
+        {senderPaid && <p class="result-note">{t('result.senderPaid')}</p>}
       </>
     )
   } else if (mode === 'receive') {

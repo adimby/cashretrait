@@ -166,6 +166,7 @@ export function Calculate() {
                 </div>
               )}
               <ResultCard mode={f.mode} best={outcome.best} notIncl={f.mode === 'receive' && !f.incl} canSplit={s.maxTx > 1}
+                senderPaid={f.mode === 'withdraw' && outcome.chart?.key === 'withdrawal_non_customer' && outcome.best.total === 0}
                 actions={(
                   <div class="result-actions-row" key={JSON.stringify(params) + f.mode}>
                     <ShareButton text={() => shareText(f.mode, outcome.best.result, l, {

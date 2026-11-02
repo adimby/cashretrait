@@ -52,14 +52,14 @@ export function HistoryList({ entries }: { entries: HistoryEntry[] | null }) {
   return (
     <div class="hist">
       <ol class="hist-list">
-        {shown.map((e) => (
-          <li key={e.date} class="hist-entry">
+        {shown.map((e, ei) => (
+          <li key={`${e.date}|${ei}`} class="hist-entry">
             <h3 class="hist-date">{t('hist.date', { date: formatDate(e.date) })}</h3>
             <ul class="board-list">
-              {e.changes.map((c) => {
+              {e.changes.map((c, ci) => {
                 const range = t('hist.range', { min: formatAr(c.min), max: formatAr(c.max) })
                 return (
-                  <li key={`${c.operator}${c.operation}${c.min}`} class="hist-row">
+                  <li key={`${c.operator}|${c.operation}|${c.min}|${c.max}|${ci}`} class="hist-row">
                     <p class="visually-hidden">{t(`op.${c.operator}`)}, {t(`table.${c.operation}`)}. {t('hist.change', { range, before: feeText(c.before, c.beforePercent), after: feeText(c.after, c.afterPercent) })}</p>
                     <div class="hist-what" aria-hidden="true">
                       <OperatorBadge op={c.operator} />

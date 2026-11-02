@@ -65,12 +65,16 @@ export function Tariffs() {
             {o.source.publishedAt
               ? <p class="trf-date">{t('trf.published')} <Plate size="s">{formatDate(o.source.publishedAt)}</Plate></p>
               : <p class="field-help">{t('trf.published.none')}</p>}
-            <p class="field-help">{t('trf.checked', { date: formatDate(tf.updatedAt) })}</p>
+            <p class="field-help">{t('trf.modified', { date: formatDate(tf.updatedAt) })}</p>
           </div>
           <TariffTable table={table} caption={t('trf.caption', { table: t(`table.${operation.value}`), op: opName })}
             noneText={t('trf.none', { op: opName })} />
           {table?.length ? (
-            <p class="field-help">{t('trf.limits', { min: formatAr(o.limits.minTx), max: formatAr(o.limits.maxTx) })}</p>
+            // The grid's real range: a table may stop below the operator's per-transaction limit.
+            <p class="field-help">{t('trf.limits', {
+              min: formatAr(Math.max(table[0].min, o.limits.minTx)),
+              max: formatAr(Math.min(table[table.length - 1].max, o.limits.maxTx)),
+            })}</p>
           ) : null}
           <ul class="board-list">
             <li>
