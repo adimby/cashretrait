@@ -56,3 +56,11 @@ export function openFavorite(f: Favorite): void {
   pendingFavorite.value = f
   if (globalThis.location && location.hash !== '#/calculer') location.hash = '#/calculer'
 }
+
+/** Puts a just-removed favorite back at its former place (undo). */
+export function restoreFavorite(f: Favorite, index: number): void {
+  if (favorites.value.some((x) => x.id === f.id) || findFavorite(f.mode, f.params)) return
+  const next = [...favorites.value]
+  next.splice(Math.max(0, Math.min(index, next.length)), 0, f)
+  save(next.slice(0, MAX_FAVORITES))
+}

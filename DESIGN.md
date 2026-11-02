@@ -227,6 +227,18 @@ Inline SVG, single series: accent-line 2 px step line with a 10 % wash, hairline
 ### Near-tier hint
 Surface notice with a bulb icon, shown only when a slightly lower amount still saves ≥ 20 % against the best split; one outlined button applies it.
 
+### Update banner
+Top of Calculer and Tarifs when fees changed since the tariffs last acknowledged (`cr.lastSeen`; a first visit just records them). Surface panel with a 2 px accent-line border, refresh icon in an outlined plate-sized square, headline « Tarifs mis à jour », the first 5 changes as ruled lines (numbers never wrap), « Voir tout (n) » outlined and « OK, compris » solid (selected colours). `role="status"`.
+
+### Monthly ranking (Comparer)
+Usage cards (operation segments on a ground-tinted track, amount field without quick plates, compact 48 px stepper) feed a board list ranked cheapest first: badge + total on a medium plate, then a single-hue 8 px magnitude bar anchored at zero (accent-line; Savings Green with « Le moins cher » and a check for the cheapest), then the extra cost per month. Unavailable operators read « non disponible ».
+
+### Tariff table (Tarifs)
+Operator picker, operation segments (2 columns, « non disponible » under absent ones), publication date on a small plate, then a full-width table: ranges in condensed tabular numerals, fee on a small plate per line. An absent operation shows a dashed panel with a « non disponible » plate. History: dated groups of board rows, old fee (faded plate) › new fee; empty history is a calm note, never an error.
+
+### Favorites list
+Board rows that open the calculation in Calculer, each with a 72 px « Supprimer » column (icon above word). Deleting shows an inline status with « Annuler ».
+
 ### Disclaimer
 Small faded text above a rule at the end of every screen: « Calcul indicatif basé sur les grilles publiques des opérateurs. Application indépendante, non affiliée à MVola, Airtel ou Orange. »
 

@@ -69,4 +69,16 @@ describe('favorites', () => {
     expect(() => mod.addFavorite(fav)).not.toThrow()
     expect(mod.favorites.value).toHaveLength(1)
   })
+  it('restores a removed favorite at its place', async () => {
+    const { s, mod } = await fresh()
+    mod.addFavorite(fav)
+    mod.addFavorite({ ...fav, params: { ...fav.params, amount: 5000 } })
+    const [first, second] = mod.favorites.value
+    mod.removeFavorite(second.id)
+    mod.restoreFavorite(second, 1)
+    expect(mod.favorites.value.map((f) => f.id)).toEqual([first.id, second.id])
+    mod.restoreFavorite(second, 0)
+    expect(mod.favorites.value).toHaveLength(2)
+    expect(JSON.parse(s.getItem('cr.favorites')!)).toHaveLength(2)
+  })
 })

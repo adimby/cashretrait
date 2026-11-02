@@ -4,7 +4,9 @@ import { t, lang } from './i18n'
 import { Header } from './components/Header'
 import { NavBar } from './components/NavBar'
 import { Disclaimer } from './components/Disclaimer'
-import { Placeholder } from './screens/Placeholder'
+import { Compare } from './screens/Compare'
+import { Tariffs } from './screens/Tariffs'
+import { Favorites } from './screens/Favorites'
 import { Plus } from './screens/Plus'
 import { Settings } from './screens/Settings'
 import { About } from './screens/About'
@@ -12,15 +14,15 @@ import { Calculate } from './screens/Calculate'
 
 function Screen({ path }: { path: string }) {
   switch (path) {
-    case '/comparer': return <Placeholder id="comparer" />
-    case '/tarifs': return <Placeholder id="tarifs" />
+    case '/comparer': return <Compare />
+    case '/tarifs': return <Tariffs />
     case '/plus': return <Plus />
-    case '/plus/favoris': return <Placeholder id="favoris" />
+    case '/plus/favoris': return <Favorites />
     case '/plus/reglages': return <Settings />
     case '/plus/apropos': return <About />
     default:
-      return path.startsWith('/plus') ? <Plus /> : path.startsWith('/comparer') ? <Placeholder id="comparer" />
-        : path.startsWith('/tarifs') ? <Placeholder id="tarifs" /> : <Calculate />
+      return path.startsWith('/plus') ? <Plus /> : path.startsWith('/comparer') ? <Compare />
+        : path.startsWith('/tarifs') ? <Tariffs /> : <Calculate />
   }
 }
 

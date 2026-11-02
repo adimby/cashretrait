@@ -24,6 +24,10 @@ const paths: Record<string, string> = {
   // any operator: three plates side by side
   any: 'M3 8.5h5v7H3ZM9.5 8.5h5v7h-5ZM16 8.5h5v7h-5Z',
   bulb: 'M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3Z',
+  trash: 'M4.5 6.5h15M9.5 6.5V4h5v2.5M6.5 6.5l1 13.5h9l1-13.5M10 10.5v6M14 10.5v6',
+  // two arrows chasing each other: tariffs were refreshed
+  refresh: 'M19.5 12a7.5 7.5 0 0 1-13.1 5M4.5 12a7.5 7.5 0 0 1 13.1-5M17.6 3v4h-4M6.4 21v-4h4',
+  history: 'M12 21a9 9 0 1 0-9-9M3 12V7.5M3 12h4.5M12 7.5V12l3 2',
   offline: 'M3 3l18 18M8.5 16.5a5 5 0 0 1 7 0M5 12.5a10 10 0 0 1 4-2.4M19 12.5a10 10 0 0 0-2.3-1.7M2 8.8a15 15 0 0 1 4.2-2.6M22 8.8A15 15 0 0 0 11 5M12 20h.01',
 }
 

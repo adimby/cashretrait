@@ -17,6 +17,7 @@ import { FavoriteButton } from '../components/FavoriteButton'
 import { Icon } from '../components/Icon'
 import { Plate } from '../components/Plate'
 import { Disclaimer } from '../components/Disclaimer'
+import { UpdateBanner } from '../components/UpdateBanner'
 
 /** Form state lives outside the component so it survives a trip to another tab. */
 const form = signal<CalcForm>(DEFAULT_FORM)
@@ -116,6 +117,7 @@ export function Calculate() {
 
   return (
     <section class="screen calc" aria-labelledby="screen-title">
+      <UpdateBanner />
       <h1 id="screen-title" class="screen-title" tabIndex={-1}>{t('calculer.title')}</h1>
       <FavoriteChips items={favorites.value} />
       <ModeTabs value={f.mode} />
