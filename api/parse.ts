@@ -87,8 +87,19 @@ export function createParse(deps: ParseDeps): (req: Request) => Promise<Response
     if (input instanceof Response) return input
     const { operator: id, src } = input
 
-    const file = await gh.getFile(TARIFFS_PATH)
-    const prev = JSON.parse(file.content) as Tariffs
+    let file: { content: string; sha: string }
+    try {
+      file = await gh.getFile(TARIFFS_PATH)
+    } catch (e) {
+      console.error('github getFile', e)
+      return error(502, 'Lecture de tarifs.json sur GitHub impossible')
+    }
+    let prev: Tariffs
+    try {
+      prev = JSON.parse(file.content) as Tariffs
+    } catch {
+      return error(502, 'tarifs.json actuel illisible (JSON invalide) : utilisez l’édition manuelle complète')
+    }
 
     let parsed: Operator
     try {

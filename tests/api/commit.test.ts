@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createCommit } from '../../api/commit'
 import { TariffsSchema, type Tariffs } from '../../src/tariffs/schema'
-import { ENV, NOW, authCookie, current, expectAdminHeaders, fakeGitHub } from './helpers'
+import { signSession } from '../../api/_lib/session'
+import { ENV, NOW, SECRET, authCookie, current, expectAdminHeaders, fakeGitHub } from './helpers'
 
 const req = (body: unknown, cookie = authCookie()) =>
   new Request('https://x.test/api/commit', { method: 'POST', headers: { cookie, 'content-type': 'application/json' }, body: JSON.stringify(body) })
@@ -23,6 +24,51 @@ describe('POST /api/commit', () => {
     expect(res.status).toBe(401)
     expectAdminHeaders(res)
     expect(puts).toHaveLength(0)
+  })
+  it.each([
+    ['tampered cookie', () => authCookie().slice(0, -2) + 'xx', ENV, 401],
+    ['expired cookie', () => authCookie(NOW - 8 * 3600_000 - 1), ENV, 401],
+    ['cookie signed with another secret', () => `cr_admin=${signSession('y'.repeat(40), NOW)}`, ENV, 401],
+    ['ADMIN_SESSION_SECRET missing', () => authCookie(), { ...ENV, ADMIN_SESSION_SECRET: undefined }, 503],
+    ['ADMIN_SESSION_SECRET too short', () => `cr_admin=${signSession(SECRET.slice(0, 31), NOW)}`, { ...ENV, ADMIN_SESSION_SECRET: SECRET.slice(0, 31) }, 503],
+  ] as const)('%s → %i, nothing committed', async (_, cookie, env, status) => {
+    const { handler, puts } = setup({ env })
+    const res = await handler(req({ tariffs: changed() }, cookie()))
+    expect(res.status).toBe(status)
+    expectAdminHeaders(res)
+    expect(puts).toHaveLength(0)
+  })
+  it.each([
+    ['top level', (t: any) => { t.evil = 1 }],
+    ['operators', (t: any) => { t.operators.wave = t.operators.mvola }],
+    ['operator', (t: any) => { t.operators.mvola.script = '<script>' }],
+    ['source', (t: any) => { t.operators.mvola.source.extra = 'x' }],
+    ['limits', (t: any) => { t.operators.mvola.limits.extra = 1 }],
+    ['tier', (t: any) => { t.operators.mvola.fees.withdrawal[0].note = 'x' }],
+  ])('unknown key (%s) → 422, nothing committed', async (_, mutate) => {
+    const { handler, puts } = setup()
+    const t = changed()
+    mutate(t)
+    const res = await handler(req({ tariffs: t }))
+    expect(res.status).toBe(422)
+    expect(puts).toHaveLength(0)
+  })
+  it.each(['javascript:alert(1)', 'data:text/html,x', 'ftp://mvola.mg/', 'mvola.mg/tarifs'])('source.url %s → 422, nothing committed', async (u) => {
+    const { handler, puts } = setup()
+    const t = changed()
+    t.operators.mvola.source.url = u
+    const res = await handler(req({ tariffs: t }))
+    expect(res.status).toBe(422)
+    expect((await res.json()).validation.reasons.join()).toMatch(/source\.url/)
+    expect(puts).toHaveLength(0)
+  })
+  it('GitHub read failure → 502 JSON error', async () => {
+    const gh = fakeGitHub()
+    gh.client.getFile = async () => { throw new Error('HTTP 500') }
+    const res = await createCommit({ env: ENV, now: () => NOW, github: () => gh.client })(req({ tariffs: changed() }))
+    expect(res.status).toBe(502)
+    expectAdminHeaders(res)
+    expect((await res.json()).error).toBeTruthy()
   })
   it('invalid tariffs → 422 with validation, nothing committed', async () => {
     const { handler, puts } = setup()

@@ -1,4 +1,4 @@
-import type { Tariffs } from '../src/tariffs/schema.js'
+import { TariffsSchema, type Tariffs } from '../src/tariffs/schema.js'
 import { validateTariffs } from '../src/tariffs/validate.js'
 import { requireSession } from './_lib/session.js'
 import { GitHubConflictError, TARIFFS_PATH, githubFromEnv, type GitHubClient } from './_lib/github.js'
@@ -23,7 +23,14 @@ export function createCommit(deps: CommitDeps): (req: Request) => Promise<Respon
       return error(400, 'Corps JSON attendu')
     }
 
-    const file = await gh.getFile(TARIFFS_PATH)
+    let file: { content: string; sha: string }
+    try {
+      file = await gh.getFile(TARIFFS_PATH)
+    } catch (e) {
+      console.error('github getFile', e)
+      return error(502, 'Lecture de tarifs.json sur GitHub impossible')
+    }
+    // An unreadable current file only disables the « suspect » comparison: committing is how it gets repaired.
     let prev: Tariffs | null = null
     try {
       prev = JSON.parse(file.content) as Tariffs
@@ -35,13 +42,15 @@ export function createCommit(deps: CommitDeps): (req: Request) => Promise<Respon
 
     // Committing on the sha the admin's preview was computed against turns concurrent edits into a 409.
     const sha = typeof body.baseSha === 'string' && body.baseSha ? body.baseSha : file.sha
-    const content = JSON.stringify(body.tariffs, null, 2) + '\n'
+    // Commit the schema-parsed data (strict schemas), never the raw request body.
+    const content = JSON.stringify(TariffsSchema.parse(body.tariffs), null, 2) + '\n'
     try {
       const { commitUrl } = await gh.putFile(TARIFFS_PATH, content, sha, COMMIT_MESSAGE)
       return json(200, { commitUrl, validation })
     } catch (e) {
       if (e instanceof GitHubConflictError) return error(409, 'tarifs.json a changé entre-temps : rechargez puis recommencez')
-      throw e
+      console.error('github putFile', e)
+      return error(502, 'Commit GitHub impossible')
     }
   })
 }

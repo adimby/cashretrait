@@ -3,7 +3,7 @@ import { signSession } from '../../api/_lib/session'
 import type { GitHubClient } from '../../api/_lib/github'
 import type { Tariffs } from '../../src/tariffs/schema'
 
-export const SECRET = 'test-secret-0123456789abcdef'
+export const SECRET = 'test-secret-0123456789abcdef-0123456789'
 export const NOW = Date.UTC(2026, 10, 2, 12, 0, 0)
 export const ENV = { ADMIN_PASSWORD: 'correct horse', ADMIN_SESSION_SECRET: SECRET, GITHUB_TOKEN: 'ghp_test', GITHUB_REPO: 'adimby/cashretrait' }
 export const tariffsText = () => readFileSync('public/tarifs.json', 'utf8')

@@ -60,6 +60,31 @@ describe('POST /api/login', () => {
     expect((await handler(req('correct horse'))).status).toBe(204)
   })
 
+  it('20 parallel wrong attempts from one IP: only 1 password check, 19 × 429', async () => {
+    const handler = createLogin({ env: ENV, now: () => NOW, sleep: async () => {} })
+    const res = await Promise.all(Array.from({ length: 20 }, () => handler(req('nope'))))
+    const statuses = res.map((r) => r.status)
+    expect(statuses.filter((s) => s === 401)).toHaveLength(1)
+    expect(statuses.filter((s) => s === 429)).toHaveLength(19)
+  })
+
+  it('parallel attempts including the right password: still a single check', async () => {
+    const handler = createLogin({ env: ENV, now: () => NOW, sleep: async () => {} })
+    await handler(req('nope'))
+    const res = await Promise.all(Array.from({ length: 5 }, () => handler(req('correct horse'))))
+    expect(res.map((r) => r.status)).toEqual([429, 429, 429, 429, 429])
+  })
+
+  it('IP: x-vercel-forwarded-for, then x-real-ip, then first x-forwarded-for', async () => {
+    const { handler, sleeps } = setup()
+    const mk = (h: Record<string, string>) => new Request('https://x.test/api/login', { method: 'POST', headers: { 'content-type': 'application/json', ...h }, body: '{"password":"nope"}' })
+    await handler(mk({ 'x-vercel-forwarded-for': '9.9.9.9', 'x-real-ip': '8.8.8.8', 'x-forwarded-for': '7.7.7.7' }))
+    await handler(mk({ 'x-vercel-forwarded-for': '9.9.9.9', 'x-forwarded-for': '6.6.6.6' })) // same client, spoofed xff
+    await handler(mk({ 'x-real-ip': '8.8.8.8', 'x-forwarded-for': '9.9.9.9' }))
+    await handler(mk({ 'x-forwarded-for': '7.7.7.7, 9.9.9.9' }))
+    expect(sleeps).toEqual([2000, 4000, 2000, 2000])
+  })
+
   it('success resets the counter', async () => {
     const { handler, sleeps } = setup()
     await handler(req('nope'))
@@ -72,6 +97,7 @@ describe('POST /api/login', () => {
     ['ADMIN_PASSWORD missing', { ...ENV, ADMIN_PASSWORD: undefined }],
     ['ADMIN_PASSWORD empty', { ...ENV, ADMIN_PASSWORD: '' }],
     ['ADMIN_SESSION_SECRET missing', { ...ENV, ADMIN_SESSION_SECRET: undefined }],
+    ['ADMIN_SESSION_SECRET shorter than 32 chars', { ...ENV, ADMIN_SESSION_SECRET: 'x'.repeat(31) }],
   ])('%s → 503, never logs in (even with empty password)', async (_, env) => {
     const { handler } = setup(env)
     for (const pw of ['', 'correct horse']) {

@@ -3,6 +3,13 @@ import { error, readCookie, type Env } from './http.js'
 
 export const SESSION_COOKIE = 'cr_admin'
 export const SESSION_MAX_AGE = 8 * 3600 // seconds
+export const MIN_SECRET_LENGTH = 32
+
+/** ADMIN_SESSION_SECRET when set and long enough (≥ 32 chars), else null (→ 503: administration not configured). */
+export function sessionSecret(env: Env): string | null {
+  const s = env.ADMIN_SESSION_SECRET
+  return s && s.length >= MIN_SECRET_LENGTH ? s : null
+}
 
 const mac = (secret: string, payload: string) => createHmac('sha256', secret).update(`cr_admin:${payload}`).digest('base64url')
 
@@ -35,7 +42,7 @@ export function sessionCookie(value: string): string {
 
 /** null when the request carries a valid session; otherwise the response to send (503 if not configured, 401). */
 export function requireSession(req: Request, env: Env, now: number): Response | null {
-  const secret = env.ADMIN_SESSION_SECRET
+  const secret = sessionSecret(env)
   if (!secret) return error(503, 'Administration non configurée')
   if (!verifySession(readCookie(req, SESSION_COOKIE), secret, now)) return error(401, 'Session requise')
   return null

@@ -21,10 +21,10 @@ export function readCookie(req: Request, name: string): string | undefined {
   return undefined
 }
 
-/** Client IP: first entry of x-forwarded-for (set by Vercel's edge), else x-real-ip. */
+/** Client IP: x-vercel-forwarded-for (set by Vercel, not spoofable), else x-real-ip, else first x-forwarded-for entry. */
 export function clientIp(req: Request): string {
-  const xff = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-  return xff || req.headers.get('x-real-ip')?.trim() || 'unknown'
+  const first = (name: string) => req.headers.get(name)?.split(',')[0]?.trim()
+  return first('x-vercel-forwarded-for') || first('x-real-ip') || first('x-forwarded-for') || 'unknown'
 }
 
 /** Wraps a handler so an unexpected exception still answers with the admin headers and no internals. */

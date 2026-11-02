@@ -1,4 +1,4 @@
-import { checkPassword, sessionCookie, signSession } from './_lib/session.js'
+import { checkPassword, sessionCookie, sessionSecret, signSession } from './_lib/session.js'
 import { clientIp, empty, error, guarded, type Env } from './_lib/http.js'
 
 export type LoginDeps = { env: Env; now: () => number; sleep: (ms: number) => Promise<void> }
@@ -17,13 +17,9 @@ export function createLogin(deps: LoginDeps): (req: Request) => Promise<Response
   }
 
   return guarded(async (req) => {
-    const { ADMIN_PASSWORD: password, ADMIN_SESSION_SECRET: secret } = deps.env
+    const password = deps.env.ADMIN_PASSWORD
+    const secret = sessionSecret(deps.env)
     if (!password || !secret) return error(503, 'Administration non configurée')
-
-    const ip = clientIp(req)
-    const now = deps.now()
-    const prev = failures.get(ip)
-    if (prev && now < prev.until) return error(429, 'Patientez avant de réessayer', { 'Retry-After': String(Math.ceil((prev.until - now) / 1000)) })
 
     let input: unknown
     try {
@@ -31,6 +27,12 @@ export function createLogin(deps: LoginDeps): (req: Request) => Promise<Response
     } catch {
       return error(400, 'Corps JSON attendu')
     }
+
+    // From here to failures.set there is no await: parallel requests cannot all pass the lockout check.
+    const ip = clientIp(req)
+    const now = deps.now()
+    const prev = failures.get(ip)
+    if (prev && now < prev.until) return error(429, 'Patientez avant de réessayer', { 'Retry-After': String(Math.ceil((prev.until - now) / 1000)) })
 
     if (typeof input === 'string' && checkPassword(input, password)) {
       failures.delete(ip)

@@ -43,6 +43,19 @@ describe('POST /api/parse — auth', () => {
     expect(res.status).toBe(503)
     expectAdminHeaders(res)
   })
+  it('ADMIN_SESSION_SECRET shorter than 32 chars → 503', async () => {
+    const { handler } = setup({ env: { ...ENV, ADMIN_SESSION_SECRET: 'z'.repeat(20) } })
+    expect((await handler(byUrl('mvola', 'https://mvola.mg/tarifs/'))).status).toBe(503)
+  })
+  it('current tarifs.json unreadable → 502 JSON error', async () => {
+    const gh = fakeGitHub()
+    gh.client.getFile = async () => ({ content: '{ broken', sha: 's' })
+    const { handler } = setup({ github: () => gh.client })
+    const res = await handler(upload('mvola', fixture('mvola.html'), 'text/html'))
+    expect(res.status).toBe(502)
+    expectAdminHeaders(res)
+    expect((await res.json()).error).toMatch(/tarifs\.json/)
+  })
   it('GitHub env missing → 503', async () => {
     const { handler } = setup({ env: { ...ENV, GITHUB_TOKEN: undefined }, github: undefined })
     const res = await handler(upload('mvola', fixture('mvola.html'), 'text/html'))
@@ -204,10 +217,11 @@ describe('POST /api/parse — URL', () => {
 })
 
 describe('isPrivateAddress', () => {
-  it.each(['127.0.0.1', '10.0.0.1', '172.16.5.5', '172.31.0.1', '192.168.0.1', '169.254.1.1', '0.0.0.0', '::1', '::', 'fe80::1', 'fc00::1', 'fd12::1', '::ffff:10.0.0.1', '::ffff:7f00:1'])('%s is private', (ip) => {
+  it.each(['127.0.0.1', '10.0.0.1', '172.16.5.5', '172.31.0.1', '192.168.0.1', '169.254.1.1', '0.0.0.0', '::1', '::', 'fe80::1', 'fc00::1', 'fd12::1', '::ffff:10.0.0.1', '::ffff:7f00:1',
+    '198.18.0.1', '198.19.255.255', '192.0.0.8', 'fec0::1', 'feff::1', '2002:c0a8:0101::1', '2002:7f00:1::', '2001:0:4136:e378:8000:63bf:f5ff:fffe', '64:ff9b::a00:1'])('%s is private', (ip) => {
     expect(isPrivateAddress(ip)).toBe(true)
   })
-  it.each(['8.8.8.8', '172.15.0.1', '172.32.0.1', '192.169.0.1', '93.184.216.34', '2606:4700::1111'])('%s is public', (ip) => {
+  it.each(['8.8.8.8', '172.15.0.1', '172.32.0.1', '192.169.0.1', '93.184.216.34', '2606:4700::1111', '198.20.0.1', '198.17.255.255', '192.0.1.1', '2002:5db8:d822::1', '2001:0:4136:e378:8000:63bf:a247:27dd', '2001:db8::1'])('%s is public', (ip) => {
     expect(isPrivateAddress(ip)).toBe(false)
   })
 })

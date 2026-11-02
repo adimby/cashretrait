@@ -19,13 +19,15 @@ export class SourceError extends Error {
 export const defaultLookup: LookupFn = async (host) => (await dnsLookup(host, { all: true, verbatim: true })).map((a) => a.address)
 
 function ipv4Private(ip: string): boolean {
-  const [a, b] = ip.split('.').map(Number)
+  const [a, b, c] = ip.split('.').map(Number)
   return (
     a === 0 || a === 10 || a === 127 || a >= 224 || // this-network, private, loopback, multicast/reserved
     (a === 100 && b >= 64 && b <= 127) || // CGNAT
     (a === 169 && b === 254) ||
     (a === 172 && b >= 16 && b <= 31) ||
-    (a === 192 && b === 168)
+    (a === 192 && b === 168) ||
+    (a === 192 && b === 0 && c === 0) || // IETF protocol assignments
+    (a === 198 && (b === 18 || b === 19)) // benchmarking 198.18.0.0/15
   )
 }
 
@@ -54,8 +56,16 @@ export function isPrivateAddress(ip: string): boolean {
   if (g.slice(0, 5).every((x) => x === 0) && (g[5] === 0xffff || g[5] === 0)) {
     return ipv4Private(`${g[6] >> 8}.${g[6] & 255}.${g[7] >> 8}.${g[7] & 255}`) // ::ffff:a.b.c.d / ::a.b.c.d
   }
-  if (g[0] === 0x64 && g[1] === 0xff9b) return ipv4Private(`${g[6] >> 8}.${g[6] & 255}.${g[7] >> 8}.${g[7] & 255}`) // NAT64
-  return (g[0] & 0xfe00) === 0xfc00 || (g[0] & 0xffc0) === 0xfe80 || (g[0] & 0xff00) === 0xff00
+  const v4 = (hi: number, lo: number) => `${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`
+  if (g[0] === 0x64 && g[1] === 0xff9b) return ipv4Private(v4(g[6], g[7])) // NAT64
+  if (g[0] === 0x2002) return ipv4Private(v4(g[1], g[2])) // 6to4: 2002:AABB:CCDD::/48
+  if (g[0] === 0x2001 && g[1] === 0) return ipv4Private(v4(g[6] ^ 0xffff, g[7] ^ 0xffff)) // Teredo: client IPv4 inverted in the last 32 bits
+  return (
+    (g[0] & 0xfe00) === 0xfc00 || // unique local fc00::/7
+    (g[0] & 0xffc0) === 0xfe80 || // link-local fe80::/10
+    (g[0] & 0xffc0) === 0xfec0 || // site-local fec0::/10 (deprecated)
+    (g[0] & 0xff00) === 0xff00 // multicast
+  )
 }
 
 async function checkUrl(raw: string, lookup: LookupFn): Promise<URL> {

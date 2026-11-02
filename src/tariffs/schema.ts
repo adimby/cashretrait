@@ -25,15 +25,25 @@ const TierSchema = z
 const FeeTableSchema = z.array(TierSchema)
 const feesShape = Object.fromEntries(OPERATIONS.map((k) => [k, FeeTableSchema.optional()]))
 
+/** Absolute http(s) URL only: it is rendered as a link in the app (no javascript:, data:…). */
+const HttpUrl = z.string().refine((s) => {
+  try {
+    const u = new URL(s)
+    return u.protocol === 'https:' || u.protocol === 'http:'
+  } catch {
+    return false
+  }
+}, { message: 'URL http(s) attendue' })
+
 const OperatorSchema = z.object({
   name: z.string(),
-  source: z.object({ url: z.string(), type: z.enum(['html', 'pdf']), publishedAt: z.string().nullable() }),
-  limits: z.object({ minTx: int, maxTx: int, maxBalance: int }),
+  source: z.object({ url: HttpUrl, type: z.enum(['html', 'pdf']), publishedAt: z.string().nullable() }).strict(),
+  limits: z.object({ minTx: int, maxTx: int, maxBalance: int }).strict(),
   fees: z.object(feesShape).strict(),
-})
+}).strict()
 
 export const TariffsSchema = z.object({
   schemaVersion: z.literal(1),
   updatedAt: z.string(),
-  operators: z.object({ mvola: OperatorSchema, airtel: OperatorSchema, orange: OperatorSchema }),
-}) as unknown as z.ZodType<Tariffs>
+  operators: z.object({ mvola: OperatorSchema, airtel: OperatorSchema, orange: OperatorSchema }).strict(),
+}).strict() as unknown as z.ZodType<Tariffs>
