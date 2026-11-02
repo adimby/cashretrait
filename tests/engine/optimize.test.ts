@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { optimizeSplit } from '../../src/engine/optimize'
 import type { SplitOk } from '../../src/engine/types'
 import type { FeeTable, Tariffs } from '../../src/tariffs/schema'
-import { bruteforce } from './bruteforce'
+import { bruteforce, bruteforceAll } from './bruteforce'
 
 const tariffs: Tariffs = JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
 const t = tariffs.operators.mvola.fees.withdrawal!
@@ -68,7 +68,12 @@ describe('optimizeSplit', () => {
       { min: 10001, max: 50000, feePercent: 1.5 },
       { min: 50001, max: 20000000, fee: 900 },
     ]
-    const tables: [string, FeeTable][] = [['synthetic%', synthetic]]
+    const wide: FeeTable = [
+      { min: 100, max: 10000, fee: 300 },
+      { min: 10001, max: 200000, feePercent: 1.5 },
+      { min: 200001, max: 20000000, fee: 5000 },
+    ]
+    const tables: [string, FeeTable][] = [['synthetic%', synthetic], ['synthetic% wide (>=50 multiples)', wide]]
     for (const op of ['mvola', 'airtel', 'orange'] as const) {
       for (const k of ['withdrawal', 'transfer_same'] as const) {
         tables.push([`${op}.${k}`, tariffs.operators[op].fees[k]!])
@@ -81,6 +86,23 @@ describe('optimizeSplit', () => {
           const r = optimizeSplit(table, a, o)
           const b = bruteforce(table, a, 1000, 4, 100, 20000000)
           expect(r.ok ? r.total : null, `${name} @ ${a}`).toBe(b ? b.total : null)
+        }
+      })
+    }
+  })
+
+  describe('matches brute force at integer granularity (step 1, maxTx 3)', () => {
+    const cases: [string, FeeTable][] = [
+      ['mvola.withdrawal', tariffs.operators.mvola.fees.withdrawal!],
+      ['airtel.transfer_same', tariffs.operators.airtel.fees.transfer_same!],
+    ]
+    for (const [name, table] of cases) {
+      it(name, () => {
+        const o = { step: 1, maxTx: 3, minTx: 100, maxTxAmount: 20000000 }
+        const ref = bruteforceAll(table, 5000, 1, 3, 100, 20000000)
+        for (let a = 100; a <= 5000; a += 7) {
+          const r = optimizeSplit(table, a, o)
+          expect(r.ok ? r.total : null, `${name} @ ${a}`).toBe(ref[a])
         }
       })
     }
