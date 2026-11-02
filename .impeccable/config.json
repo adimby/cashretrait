@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "tests/fixtures/airtel.html"
+        ],
+        "createdAt": "2026-11-02T19:11:32.664Z",
+        "reason": "Claude: test fixture copying the Airtel page markup verbatim; not our UI"
+      },
+      {
+        "rule": "skipped-heading",
+        "value": "*",
+        "files": [
+          "tests/fixtures/airtel.html"
+        ],
+        "createdAt": "2026-11-02T19:11:32.678Z",
+        "reason": "Claude: test fixture copying the Airtel page markup verbatim; not our UI"
+      }
+    ]
+  }
+}
