@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { inverse, maxWithdrawable } from '../../src/engine/inverse'
-import { optimizeSplit } from '../../src/engine/optimize'
+import { optimizeSplit, optimizeSplitWithin } from '../../src/engine/optimize'
 import type { SplitOpts } from '../../src/engine/types'
 import type { FeeTable, Tariffs } from '../../src/tariffs/schema'
 
@@ -119,10 +119,50 @@ describe('maxWithdrawable brute force', () => {
     expect(maxWithdrawable(nm, 5300, o)).toMatchObject({ ok: true, amount: 5100 })
     for (const bal of [150, 1200, 3000, 5300, 7000, 10200, 12000]) check(nm, bal, o)
   })
+  it('maxTx 10 matches linear search', () => {
+    for (const id of ['mvola', 'airtel', 'orange'] as const) {
+      const op = tariffs.operators[id]
+      const o = { step: 1000, maxTx: 10, minTx: op.limits.minTx, maxTxAmount: op.limits.maxTx }
+      for (const bal of [5300, 101900, 254000]) check(op.fees.withdrawal!, bal, o)
+    }
+  })
   it('20 M balance is fast', () => {
     const t0 = performance.now()
     const r = maxWithdrawable(mv.withdrawal!, 20000000, opts)
     expect(r.ok).toBe(true)
     expect(performance.now() - t0).toBeLessThan(200)
+  })
+})
+
+describe('maxWithdrawable wall clock (regression: was 15 s for MVola, > 60 s for Airtel)', () => {
+  for (const id of ['mvola', 'airtel'] as const) {
+    for (const step of [1000, 100]) {
+      it(`${id}, 20 M balance, step ${step}, maxTx 10 → < 500 ms`, () => {
+        const table = tariffs.operators[id].fees.withdrawal!
+        const o = { step, maxTx: 10, minTx: 100, maxTxAmount: 20000000 }
+        const t0 = performance.now()
+        const r = maxWithdrawable(table, 20000000, o)
+        const dt = performance.now() - t0
+        if (!r.ok) throw new Error(r.reason)
+        expect(r.amount + r.withdrawal.total).toBeLessThanOrEqual(20000000)
+        // Exact: the next step up does not fit.
+        const up = optimizeSplit(table, r.amount + step, o)
+        expect(up.ok && r.amount + step + up.total <= 20000000).toBe(false)
+        expect(r.withdrawal).toEqual(optimizeSplit(table, r.amount, o))
+        expect(dt).toBeLessThan(500)
+      })
+    }
+  }
+})
+
+describe('optimizeSplitWithin', () => {
+  it('returns optimizeSplit’s split when the optimum is within budget, unavailable otherwise', () => {
+    const o = { step: 1000, maxTx: 10, minTx: 100, maxTxAmount: 20000000 }
+    for (const a of [1000001, 2500000, 12345000, 19999000]) {
+      const full = optimizeSplit(mv.withdrawal!, a, o)
+      if (!full.ok) throw new Error(full.reason)
+      expect(optimizeSplitWithin(mv.withdrawal!, a, o, full.total)).toEqual(full)
+      expect(optimizeSplitWithin(mv.withdrawal!, a, o, full.total - 1)).toEqual({ ok: false, reason: 'unavailable' })
+    }
   })
 })
