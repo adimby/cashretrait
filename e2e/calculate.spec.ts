@@ -1,0 +1,52 @@
+import { test, expect, type Page } from '@playwright/test'
+
+const NBSP = /[   ]/g
+/** Text with every kind of space folded to a plain one. */
+const flat = async (page: Page) => ((await page.locator('main, body').first().innerText()).replace(NBSP, ' '))
+
+test.beforeEach(async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('heading', { level: 1, name: 'Calculer' })).toBeVisible()
+})
+
+async function setStep100(page: Page) {
+  await page.getByRole('link', { name: 'Plus' }).click()
+  await page.getByRole('link', { name: /Réglages/ }).click()
+  await page.getByRole('radio', { name: /^100/ }).check({ force: true })
+  await page.getByRole('link', { name: 'Calculer' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Calculer' })).toBeVisible()
+}
+
+test('retirer 1 000 001 Ar (pas 100) : total 8 900 Ar et une économie', async ({ page }) => {
+  await setStep100(page)
+  await page.getByRole('radio', { name: 'Retirer' }).check({ force: true })
+  await page.getByRole('radio', { name: 'MVola' }).first().check({ force: true })
+  await page.getByLabel(/montant/i).first().fill('1000001')
+  const result = page.getByRole('region', { name: 'Meilleure option' })
+  await expect(result).toBeVisible()
+  await expect(result.locator('.result-total')).toContainText('8 900')
+  await expect(result.locator('.result-savings')).toContainText(/Économie/)
+})
+
+test('le destinataire doit recevoir 100 000 Ar, MVola vers MVola, frais compris', async ({ page }) => {
+  await page.getByRole('radio', { name: 'Le destinataire doit recevoir' }).check({ force: true })
+  await page.getByRole('radio', { name: 'MVola' }).first().check({ force: true })
+  await page.getByRole('radio', { name: 'MVola' }).nth(1).check({ force: true })
+  await page.getByLabel(/montant/i).first().fill('100000')
+  const checkbox = page.getByRole('checkbox')
+  if (!(await checkbox.isChecked())) await checkbox.check()
+  const result = page.getByRole('region', { name: 'Meilleure option' })
+  await expect(result).toBeVisible()
+  await expect(result.locator('.result-lead')).toContainText('101 900'.replace(' ', ' '))
+})
+
+test('max retirable avec un solde de 487 350 Ar : montant affiché et mention indicative', async ({ page }) => {
+  await page.getByRole('radio', { name: 'Max retirable' }).check({ force: true })
+  await page.getByRole('radio', { name: 'MVola' }).first().check({ force: true })
+  await page.getByLabel(/solde|montant/i).first().fill('487350')
+  const result = page.getByRole('region', { name: 'Meilleure option' })
+  await expect(result.locator('.result-lead')).toContainText(/\d/)
+  await expect(result.locator('.result-lead-label')).toHaveText('Vous pouvez retirer')
+  await expect(result.getByText(/Calcul indicatif/)).toBeVisible()
+  expect(await flat(page)).toMatch(/Il vous restera/)
+})

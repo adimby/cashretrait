@@ -8,3 +8,5 @@ update-report.json
 update-summary.md
 update-suspect.json
 public/tarifs-history.json
+test-results/
+playwright-report/
