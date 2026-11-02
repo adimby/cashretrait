@@ -9,6 +9,8 @@ export type FeeChange = {
   max: number
   before: number | null
   after: number | null
+  beforePercent?: boolean
+  afterPercent?: boolean
 }
 
 const value = (t: Tier): number => ('fee' in t && t.fee !== undefined ? t.fee : (t as { feePercent: number }).feePercent)
@@ -45,11 +47,7 @@ export function validateTariffs(next: unknown, prev: Tariffs | null): Validation
     for (const id of OPERATORS) {
       const po = prev.operators[id]
       const no = t.operators[id]
-      if (!po) continue
-      if (!no) {
-        suspect.push(`${id}: opérateur disparu`)
-        continue
-      }
+      if (!po || !no) continue
       for (const key of OPERATIONS) {
         const pt = po.fees[key]
         if (!pt || pt.length === 0) continue
@@ -60,11 +58,17 @@ export function validateTariffs(next: unknown, prev: Tariffs | null): Validation
         }
         for (const old of pt) {
           const cur = nt.find((x) => x.min === old.min && x.max === old.max)
-          if (!cur || kind(cur) !== kind(old)) continue
+          if (!cur || kind(cur) !== kind(old)) {
+            suspect.push(`${id} ${key} ${old.min}–${old.max}: palier disparu ou modifié`)
+            continue
+          }
           const a = value(old)
           const b = value(cur)
           if (a === b) continue
           if (a === 0 || Math.abs(b - a) / a > 0.5) suspect.push(`${id} ${key} ${old.min}–${old.max}: variation > 50 % (${a} → ${b})`)
+        }
+        for (const cur of nt) {
+          if (!pt.some((x) => x.min === cur.min && x.max === cur.max)) suspect.push(`${id} ${key} ${cur.min}–${cur.max}: palier disparu ou modifié (nouveau palier)`)
         }
       }
     }
@@ -89,7 +93,11 @@ export function diffTariffs(prev: Tariffs, next: Tariffs): FeeChange[] {
         const n = nt.find((x) => x.min === min && x.max === max)
         const before = p ? value(p) : null
         const after = n ? value(n) : null
-        if (before !== after || (p && n && kind(p) !== kind(n))) out.push({ operator, operation, min, max, before, after })
+        if (before !== after || (p && n && kind(p) !== kind(n))) out.push({
+          operator, operation, min, max, before, after,
+          ...(p && kind(p) === 'pct' ? { beforePercent: true } : {}),
+          ...(n && kind(n) === 'pct' ? { afterPercent: true } : {}),
+        })
       }
     }
   }
@@ -118,8 +126,8 @@ const OPERATOR_NAMES: Record<OperatorId, string> = { mvola: 'MVola', airtel: 'Ai
 
 export function formatChange(c: FeeChange, lang: 'fr' | 'mg', tariffs?: Tariffs): string {
   const name = tariffs?.operators[c.operator]?.name ?? OPERATOR_NAMES[c.operator]
-  const v = (n: number | null) => (n === null ? '—' : fmt(n))
-  return `${name} ${OP_NAMES[lang][c.operation]} ${fmt(c.min)}–${fmt(c.max)} : ${v(c.before)} → ${v(c.after)}`
+  const v = (n: number | null, pct?: boolean) => (n === null ? '—' : pct ? `${String(n).replace('.', ',')} %` : fmt(n))
+  return `${name} ${OP_NAMES[lang][c.operation]} ${fmt(c.min)}–${fmt(c.max)} : ${v(c.before, c.beforePercent)} → ${v(c.after, c.afterPercent)}`
 }
 
 export function mergeOperator(prev: Tariffs, id: OperatorId, op: Operator, now: Date = new Date()): Tariffs {

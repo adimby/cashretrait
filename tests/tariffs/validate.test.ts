@@ -62,6 +62,35 @@ describe('validateTariffs', () => {
   })
 })
 
+describe('tier set changes', () => {
+  const sus = (n: Tariffs) => validateTariffs(n, load())
+  it('dropped last tier is suspect', () => {
+    const n = load()
+    n.operators.mvola.fees.withdrawal!.pop()
+    const v = sus(n)
+    expect(v.status).toBe('suspect')
+    expect(v.reasons.join(' ')).toMatch(/mvola withdrawal .*palier disparu/)
+  })
+  it('moved boundary is suspect', () => {
+    const n = load()
+    const w = n.operators.mvola.fees.withdrawal!
+    w[1].max += 1
+    w[2].min += 1
+    expect(sus(n).status).toBe('suspect')
+  })
+  it('fee to percent switch is suspect', () => {
+    const n = load()
+    const w = n.operators.mvola.fees.withdrawal!
+    w[1] = { min: w[1].min, max: w[1].max, feePercent: 1.5 }
+    expect(sus(n).status).toBe('suspect')
+  })
+  it('missing operator is invalid', () => {
+    const n = load() as unknown as { operators: Record<string, unknown> }
+    delete n.operators.airtel
+    expect(sus(n as unknown as Tariffs).status).toBe('invalid')
+  })
+})
+
 describe('diff / format / merge', () => {
   it('diffs changed, added and removed ranges', () => {
     const p = load()
@@ -81,6 +110,10 @@ describe('diff / format / merge', () => {
     expect(formatChange(c, 'fr')).toBe('MVola retrait 25 001–50 000 : 1 300 → 1 500')
     expect(formatChange(c, 'mg')).toBe('MVola fisintonana 25 001–50 000 : 1 300 → 1 500')
     expect(formatChange({ ...c, after: null }, 'fr')).toBe('MVola retrait 25 001–50 000 : 1 300 → —')
+  })
+  it('formatChange mg transfer_other_op and percent', () => {
+    const c = { operator: 'airtel' as const, operation: 'transfer_other_op' as const, min: 100, max: 1000, before: 1500, after: 1.5, afterPercent: true }
+    expect(formatChange(c, 'mg')).toBe('Airtel Money fandefasana tambazotra hafa 100–1 000 : 1 500 → 1,5 %')
   })
   it('mergeOperator replaces only the given operator and updates updatedAt', () => {
     const p = load()
