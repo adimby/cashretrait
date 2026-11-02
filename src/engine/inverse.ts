@@ -33,27 +33,21 @@ export function maxWithdrawable(table: FeeTable, balance: number, opts: SplitOpt
     const r = optimizeSplit(table, m, opts)
     return r.ok && m + r.total <= balance ? r : null
   }
-  const lo0 = Math.ceil(Math.max(opts.minTx, 1) / step)
-  const cap = Math.min(balance, opts.maxTx * opts.maxTxAmount)
-  let lo = lo0
-  let hi = Math.floor(cap / step)
-  let found = 0
-  while (lo <= hi) {
-    const mid = Math.floor((lo + hi) / 2)
-    if (eval_(mid * step)) {
-      found = mid
-      lo = mid + 1
-    } else hi = mid - 1
+  if (!table.length) return { ok: false, reason: 'unavailable' }
+  // Every valid M satisfies M ≤ balance − minFee, so scanning down from there, the first fit is the largest.
+  const minFee = Math.min(...table.map((t) => ('fee' in t ? t.fee : Math.ceil((Math.max(t.min, 1) * t.feePercent) / 100))))
+  const lo = Math.ceil(Math.max(opts.minTx, 1) / step) * step
+  // Upper bound is min(balance − minFee, max splittable); subtracting minFee from the cap as well would miss M = cap.
+  const top = Math.min(balance - minFee, opts.maxTx * opts.maxTxAmount)
+  let best = 0
+  let w: SplitOk | null = null
+  for (let m = Math.floor(top / step) * step; m >= lo; m -= step) {
+    w = eval_(m)
+    if (w) {
+      best = m
+      break
+    }
   }
-  // Cost is locally non-monotone: also try tier ceilings and steps up to the next ceiling.
-  const bound = found ? found * step : lo0 * step
-  const ceilings = table.map((t) => Math.floor(t.max / step) * step).filter((c) => c <= cap).sort((a, b) => a - b)
-  const next = ceilings.find((c) => c > bound) ?? bound
-  const tries = new Set<number>(ceilings.filter((c) => c > bound && c <= next))
-  for (let m = bound + step; m <= Math.min(next, bound + 50 * step, cap); m += step) tries.add(m)
-  let best = found ? found * step : 0
-  for (const m of tries) if (m > best && m >= lo0 * step && eval_(m)) best = m
-  if (!best) return { ok: false, reason: 'insufficient' }
-  const w = eval_(best)!
+  if (!best || !w) return { ok: false, reason: 'insufficient' }
   return { ok: true, amount: best, withdrawal: w, remaining: balance - best - w.total }
 }

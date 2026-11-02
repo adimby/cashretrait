@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { inverse, maxWithdrawable } from '../../src/engine/inverse'
 import { optimizeSplit } from '../../src/engine/optimize'
-import type { Tariffs } from '../../src/tariffs/schema'
+import type { SplitOpts } from '../../src/engine/types'
+import type { FeeTable, Tariffs } from '../../src/tariffs/schema'
 
 const tariffs: Tariffs = JSON.parse(readFileSync('public/tarifs.json', 'utf8'))
 const mv = tariffs.operators.mvola.fees
@@ -38,6 +39,11 @@ describe('inverse', () => {
     const r = inverse({ net: 100000, withdrawTable: [], transferTable: mv.transfer_same!, includeWithdrawalFee: true, opts })
     expect(r).toEqual({ ok: false, reason: 'unavailable' })
   })
+  it('withdrawOpts applies the withdrawing operator minTx (Orange 200)', () => {
+    const base = { net: 150, withdrawTable: mv.withdrawal!, transferTable: mv.transfer_same!, includeWithdrawalFee: true, opts: { ...opts, step: 50 } }
+    expect(inverse({ ...base, withdrawOpts: { ...opts, step: 50, minTx: 200 } })).toEqual({ ok: false, reason: 'below_min' })
+    expect(inverse(base).ok).toBe(true)
+  })
   it('propagates invalid input without throwing', () => {
     expect(inverse({ net: -5, withdrawTable: mv.withdrawal!, transferTable: mv.transfer_same!, includeWithdrawalFee: true, opts }).ok).toBe(false)
   })
@@ -63,5 +69,60 @@ describe('maxWithdrawable', () => {
   })
   it('invalid balance does not throw', () => {
     expect(maxWithdrawable(mv.withdrawal!, NaN, opts).ok).toBe(false)
+  })
+})
+
+const linear = (table: FeeTable, bal: number, o: SplitOpts) => {
+  let best = 0
+  for (let m = Math.ceil(o.minTx / o.step) * o.step; m <= bal; m += o.step) {
+    const r = optimizeSplit(table, m, o)
+    if (r.ok && m + r.total <= bal) best = m
+  }
+  return best
+}
+const check = (table: FeeTable, bal: number, o: SplitOpts) => {
+  const r = maxWithdrawable(table, bal, o)
+  const lin = linear(table, bal, o)
+  if (lin === 0) expect(r.ok).toBe(false)
+  else expect(r.ok && r.amount).toBe(lin)
+}
+
+describe('maxWithdrawable brute force', () => {
+  const ops = ['mvola', 'airtel', 'orange'] as const
+  for (const id of ops) {
+    it(`${id} withdrawal`, () => {
+      const op = tariffs.operators[id]
+      for (const step of [100, 500, 1000]) {
+        const o = { step, maxTx: 3, minTx: op.limits.minTx, maxTxAmount: op.limits.maxTx }
+        for (const bal of [150, 999, 5300, 26100, 51234, 101900, 254000]) check(op.fees.withdrawal!, bal, o)
+      }
+    })
+  }
+  const pct: FeeTable = [
+    { min: 100, max: 1000, fee: 100 },
+    { min: 1001, max: 10000, feePercent: 50 },
+    { min: 10001, max: 1000000, fee: 500 },
+  ]
+  it('percent tier: balance 11 600 step 1000 → 11 000', () => {
+    const o = { step: 1000, maxTx: 3, minTx: 100, maxTxAmount: 1000000 }
+    const r = maxWithdrawable(pct, 11600, o)
+    expect(r.ok && r.amount).toBe(11000)
+    for (const step of [100, 1000]) for (const bal of [300, 2500, 9000, 11600, 15000]) check(pct, bal, { ...o, step })
+  })
+  it('non-monotone fixed table, maxTx 1', () => {
+    const nm: FeeTable = [
+      { min: 100, max: 1000, fee: 100 },
+      { min: 1001, max: 5000, fee: 2000 },
+      { min: 5001, max: 10000, fee: 200 },
+    ]
+    const o = { step: 100, maxTx: 1, minTx: 100, maxTxAmount: 10000 }
+    expect(maxWithdrawable(nm, 5300, o)).toMatchObject({ ok: true, amount: 5100 })
+    for (const bal of [150, 1200, 3000, 5300, 7000, 10200, 12000]) check(nm, bal, o)
+  })
+  it('20 M balance is fast', () => {
+    const t0 = performance.now()
+    const r = maxWithdrawable(mv.withdrawal!, 20000000, opts)
+    expect(r.ok).toBe(true)
+    expect(performance.now() - t0).toBeLessThan(200)
   })
 })

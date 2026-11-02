@@ -1,17 +1,9 @@
 import { OPERATORS, type FeeTable, type OperatorId, type Tariffs } from '../tariffs/schema'
 import { inverse, type InverseResult } from './inverse'
-import type { SplitOpts } from './types'
+import { optsFor, type BaseOpts } from './limits'
 
 export type PathKind = 'same' | 'same_app' | 'other_op' | 'non_customer'
 export type SendPath = { kind: PathKind; from: OperatorId; to: OperatorId | null; result: InverseResult }
-type BaseOpts = Omit<SplitOpts, 'minTx' | 'maxTxAmount'>
-
-export const optsFor = (t: Tariffs, id: OperatorId, o: BaseOpts): SplitOpts => ({
-  ...o,
-  minTx: t.operators[id].limits.minTx,
-  maxTxAmount: t.operators[id].limits.maxTx,
-})
-
 /** Available send paths from `from` (to a given operator, or all if null), cheapest first (spec §5.4). */
 export function sendPaths(
   t: Tariffs,

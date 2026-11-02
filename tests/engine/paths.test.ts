@@ -41,6 +41,11 @@ describe('sendPaths', () => {
     expect(ps.some((p) => p.kind === 'non_customer' && p.to === null)).toBe(true)
     expect(sorted(totals(ps))).toBe(true)
   })
+  it('Orange has no non_customer path (no withdrawal_non_customer)', () => {
+    const ps = sendPaths(t, 'orange', null, 100000, true, o)
+    expect(ps.length).toBeGreaterThan(0)
+    expect(ps.some((p) => p.kind === 'non_customer')).toBe(false)
+  })
   it('invalid amount → empty list, no throw', () => {
     expect(sendPaths(t, 'mvola', 'airtel', -3, true, o)).toEqual([])
   })
