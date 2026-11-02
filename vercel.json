@@ -1,0 +1,19 @@
+{
+  "cleanUrls": true,
+  "rewrites": [{ "source": "/zadmin", "destination": "/zadmin.html" }],
+  "headers": [
+    {
+      "source": "/zadmin(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    },
+    { "source": "/api/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] }
+  ],
+  "functions": {
+    "api/parse.ts": { "maxDuration": 30, "includeFiles": "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs" },
+    "api/login.ts": { "maxDuration": 35 },
+    "api/commit.ts": { "maxDuration": 15 }
+  }
+}

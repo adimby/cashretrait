@@ -1,0 +1,104 @@
+/* /zadmin: the same fare board, plainer. Only layout for forms and the tier editor;
+   every colour, radius and type size comes from the tokens in src/ui/styles/app.css. */
+
+main.adm-main { padding-bottom: calc(env(safe-area-inset-bottom) + var(--s-7)); }
+.adm-main .screen-title:focus { outline: none; }
+
+.adm-form { display: flex; flex-direction: column; gap: var(--s-3); }
+.adm-form > .btn { margin-top: var(--s-2); }
+.adm-field { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; }
+.adm-field .field-label { margin-top: var(--s-3); }
+
+.adm-input, .adm-select, .adm-num-input {
+  min-height: var(--tap); width: 100%; min-width: 0;
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--ink-2); border-radius: var(--r-segment, 8px);
+  padding: 0 var(--s-3);
+}
+.adm-select { padding-right: var(--s-2); cursor: pointer; }
+.adm-input:focus-visible, .adm-select:focus-visible, .adm-num-input:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
+.adm-input-num, .adm-num-input { font: 600 1.25rem/1 var(--font-num); font-variant-numeric: tabular-nums lining-nums; }
+.adm-file { min-height: var(--tap); font-size: var(--fs-small); }
+.adm-file::file-selector-button {
+  min-height: 40px; margin-right: var(--s-3); padding: 0 var(--s-4); cursor: pointer;
+  font: inherit; font-weight: 700; color: var(--accent-line);
+  background: var(--surface); border: 2px solid var(--accent-line); border-radius: var(--r-panel);
+}
+
+.btn:disabled { cursor: not-allowed; opacity: 0.45; filter: none; }
+.adm-back { background: none; border: 0; cursor: pointer; font: inherit; font-weight: 600; }
+.adm-link { text-decoration: none; }
+.adm-done-title { display: flex; align-items: center; gap: var(--s-2); }
+.adm-done-title .icon { color: var(--good); }
+.adm-danger { color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; background: none; border: 0; }
+.adm-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2); }
+
+.adm-panel { display: flex; flex-direction: column; gap: var(--s-3); }
+.adm-panel > .section-title { margin-top: var(--s-4); }
+.adm-sub { font: 600 1.25rem/1.2 var(--font-num); margin-top: var(--s-3); }
+.adm-more > summary {
+  min-height: var(--tap); display: flex; align-items: center; cursor: pointer; list-style-position: inside;
+}
+.adm-more[open] > summary { margin-bottom: var(--s-2); }
+.adm-map { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: var(--s-3); }
+
+/* tier editor: one ruled row per tier, two lines at 360 px */
+.adm-tier {
+  display: grid; gap: var(--s-2); align-items: end;
+  grid-template-columns: 1.75rem 1fr 1fr;
+  grid-template-areas: 'n min max' '. fee end';
+  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-2);
+}
+.adm-tier-n {
+  grid-area: n; align-self: center; text-align: center; color: var(--ink-2);
+  font: 600 1.125rem/1 var(--font-num); font-variant-numeric: tabular-nums;
+}
+.adm-tier > .adm-num:nth-of-type(1) { grid-area: min; }
+.adm-tier > .adm-num:nth-of-type(2) { grid-area: max; }
+.adm-tier > .adm-num:nth-of-type(3) { grid-area: fee; }
+.adm-tier-end { grid-area: end; display: flex; align-items: flex-end; gap: var(--s-2); min-width: 0; }
+.adm-tier-end .adm-unit { flex: 1; }
+@media (min-width: 30rem) {
+  .adm-tier { grid-template-columns: 1.75rem 1fr 1fr 1fr 9rem; grid-template-areas: 'n min max fee end'; }
+}
+.adm-num { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.adm-num-label { font-size: var(--fs-label); font-weight: 500; color: var(--ink-2); }
+.adm-num-input { text-align: right; }
+.adm-tier-del {
+  flex: none; width: 52px; min-height: var(--tap); padding: 2px 0; cursor: pointer;
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  background: none; color: var(--ink-2); font-size: 0.75rem; font-weight: 600;
+  border: 1px solid var(--rule); border-radius: var(--r-panel);
+}
+.adm-tier-del:active { background: var(--ground); color: var(--ink); }
+
+/* raw tables from the document */
+.adm-raw > summary { min-height: var(--tap); display: flex; align-items: center; cursor: pointer; font-weight: 700; color: var(--accent-line); }
+.adm-scroll { overflow-x: auto; max-height: 22rem; border-radius: var(--r-panel); }
+.adm-raw-table td, .adm-raw-table th { text-align: left; }
+
+/* validation status: tone carried by an icon, a word and the panel edge, never by colour alone */
+.adm-check {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r-panel);
+  padding: var(--s-3) var(--s-4); display: flex; flex-direction: column; gap: var(--s-2);
+  margin-top: var(--s-3);
+}
+.adm-check-title { display: flex; align-items: center; gap: var(--s-2); font: 600 var(--fs-h2)/1.15 var(--font-num); }
+.adm-check.is-ok .adm-check-title .icon { color: var(--good); }
+.adm-check.is-suspect { background: var(--warn-bg); color: var(--warn-ink); border-color: transparent; }
+.adm-check.is-invalid { border: 2px solid var(--ink); }
+.adm-reasons { font-size: var(--fs-small); font-variant-numeric: tabular-nums; display: flex; flex-direction: column; gap: var(--s-1); }
+.adm-reasons li { padding-left: var(--s-3); text-indent: calc(var(--s-3) * -1); overflow-wrap: anywhere; }
+.adm-reasons li::before { content: '–'; display: inline-block; width: var(--s-3); text-indent: 0; }
+.adm-changes { font-size: var(--fs-body); }
+.adm-error { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); }
+
+/* publish bar stays reachable under long grids */
+.adm-publish {
+  position: sticky; bottom: 0; z-index: 1;
+  margin: 0 calc(var(--s-4) * -1); padding: var(--s-3) var(--s-4) calc(var(--s-3) + env(safe-area-inset-bottom));
+  background: var(--ground); border-top: 1px solid var(--rule);
+  display: flex; align-items: center; gap: var(--s-3);
+}
+.adm-publish-status { flex: 1; min-height: var(--tap); text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: var(--s-1); }
+.adm-publish .btn { flex: 0 1 12rem; }

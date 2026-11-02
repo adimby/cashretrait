@@ -9,8 +9,23 @@ const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 
 const BOARD = '#1c2f86'
 const GROUND = '#e9eef5'
 
+// Admin output: every chunk that holds only /zadmin code is named zadmin-*, so the precache ignores it
+// (globIgnores below) and scripts/check-dist.ts exempts it. Shared chunks keep neutral names.
+const ADMIN_SRC = /[\\/]src[\\/]admin[\\/]/
+const isAdminChunk = (c: { name: string; moduleIds: string[] }) =>
+  c.name === 'zadmin' || (c.moduleIds.length > 0 && c.moduleIds.every((id) => ADMIN_SRC.test(id) || id.includes('zadmin')))
+
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
+  build: {
+    rollupOptions: {
+      input: { index: 'index.html', zadmin: 'zadmin.html' },
+      output: {
+        entryFileNames: (c) => (isAdminChunk(c) ? 'assets/zadmin-[hash].js' : 'assets/[name]-[hash].js'),
+        chunkFileNames: (c) => (isAdminChunk(c) ? 'assets/zadmin-[name]-[hash].js' : 'assets/[name]-[hash].js'),
+      },
+    },
+  },
   plugins: [
     preact(),
     VitePWA({
@@ -55,5 +70,17 @@ export default defineConfig({
         ],
       },
     }),
+    {
+      // The admin page must not register the service worker nor link the manifest (it is not part of the PWA).
+      name: 'zadmin-without-pwa',
+      enforce: 'post',
+      transformIndexHtml: {
+        order: 'post',
+        handler: (html, ctx) =>
+          /zadmin\.html$/.test(ctx.filename)
+            ? html.replace(/<link rel="manifest"[^>]*>/g, '').replace(/<script id="vite-plugin-pwa:register-sw"[^>]*><\/script>/g, '')
+            : html,
+      },
+    },
   ],
 })

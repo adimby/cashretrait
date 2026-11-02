@@ -74,6 +74,7 @@ describe('POST /api/parse — uploads', () => {
     expect(body.validation).toEqual({ status: 'ok', reasons: [] })
     expect(body.operator).toEqual(current().operators.mvola)
     expect(body.baseSha).toBe('sha-current')
+    expect(body.current).toEqual(current()) // the GitHub copy the preview merges onto
   })
   it('Airtel saved web page (HTML upload, no content-type) → ok', async () => {
     const { handler } = setup()
@@ -110,6 +111,7 @@ describe('POST /api/parse — uploads', () => {
     expect(body.generic).toEqual([{ headers: ['Montant', 'Frais'], rows: [['1 - 100', '50']] }])
     expect(body.error).toMatch(/MVola/)
     expect(body.operator).toBeUndefined()
+    expect(body.current).toEqual(current())
   })
   it('PDF given for an HTML operator → generic tables from the PDF text', async () => {
     const { handler } = setup()

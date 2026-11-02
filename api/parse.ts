@@ -74,7 +74,8 @@ async function readInput(req: Request, fetchDeps: { fetch?: FetchFn; lookup?: Lo
 
 /**
  * POST /api/parse (session) — multipart `{operator, file}` (PDF or saved HTML page) or JSON `{operator, url}`.
- * → `{ operator, validation, changes, baseSha }`, or `{ generic, error, baseSha }` when the operator's parser fails.
+ * → `{ operator, validation, changes, baseSha, current }`, or `{ generic, error, baseSha, current }` when the operator's parser fails.
+ * `current` is the GitHub copy at `baseSha`: the admin preview merges onto it (the deployed copy may lag behind).
  */
 export function createParse(deps: ParseDeps): (req: Request) => Promise<Response> {
   return guarded(async (req) => {
@@ -115,11 +116,11 @@ export function createParse(deps: ParseDeps): (req: Request) => Promise<Response
       } catch {
         /* unreadable document: empty table list, manual editing from scratch */
       }
-      return json(200, { generic, error: message, baseSha: file.sha })
+      return json(200, { generic, error: message, baseSha: file.sha, current: prev })
     }
 
     const next = mergeOperator(prev, id, parsed, new Date(deps.now()))
-    return json(200, { operator: parsed, validation: validateTariffs(next, prev), changes: diffTariffs(prev, next), baseSha: file.sha })
+    return json(200, { operator: parsed, validation: validateTariffs(next, prev), changes: diffTariffs(prev, next), baseSha: file.sha, current: prev })
   })
 }
 
