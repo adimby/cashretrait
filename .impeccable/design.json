@@ -1,0 +1,160 @@
+{
+ "schemaVersion": 2,
+ "generatedAt": "2026-11-02T19:30:24.854757Z",
+ "title": "Design System: CashRetrait",
+ "extensions": {
+  "colorMeta": {
+   "board": {
+    "role": "primary",
+    "displayName": "Coachwork Ultramarine"
+   },
+   "stripe": {
+    "role": "primary",
+    "displayName": "Pinstripe Sky"
+   },
+   "ground": {
+    "role": "neutral",
+    "displayName": "Enamel Ground"
+   },
+   "plate": {
+    "role": "neutral",
+    "displayName": "Plate White"
+   },
+   "ink": {
+    "role": "neutral",
+    "displayName": "Board Ink"
+   },
+   "ink-2": {
+    "role": "neutral",
+    "displayName": "Faded Ink"
+   },
+   "good": {
+    "role": "tertiary",
+    "displayName": "Savings Green"
+   },
+   "warn-bg": {
+    "role": "tertiary",
+    "displayName": "Stale Amber"
+   }
+  },
+  "typographyMeta": {
+   "display": {
+    "displayName": "Display",
+    "purpose": "Screen titles"
+   },
+   "numeral": {
+    "displayName": "Plate numerals",
+    "purpose": "All amounts and dates on plates"
+   },
+   "body": {
+    "displayName": "Body",
+    "purpose": "Reading text"
+   }
+  },
+  "shadows": [
+   {
+    "name": "board-band",
+    "value": "0 2px 0 var(--board-deep), 0 4px 0 var(--stripe)",
+    "purpose": "Painted pinstripe under the app bar (mirrored above the nav)"
+   },
+   {
+    "name": "plate",
+    "value": "0 1px 2px rgb(16 27 58 / 0.12)",
+    "purpose": "Raised enamel plate"
+   }
+  ],
+  "motion": [
+   {
+    "name": "ease",
+    "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+    "purpose": "200ms colour transitions on nav and segments; reduced motion respected"
+   }
+  ],
+  "breakpoints": [
+   {
+    "name": "content-max",
+    "value": "560px"
+   }
+  ]
+ },
+ "components": [
+  {
+   "name": "Price plate",
+   "kind": "custom",
+   "refersTo": "plate-l",
+   "description": "Signature: amount on a white enamel plate.",
+   "html": "<span class=\"ds-plate\"><span>25 000</span><span class=\"ds-unit\">Ar</span></span>",
+   "css": ".ds-plate{display:inline-flex;align-items:baseline;gap:.18em;background:var(--plate,#fff);color:var(--plate-ink,#101b3a);border:1px solid var(--plate-edge,#b4bfd3);border-radius:6px;box-shadow:0 1px 2px rgb(16 27 58/.12);font:600 2.25rem/1 'Barlow Condensed','Arial Narrow',sans-serif;font-variant-numeric:tabular-nums;padding:8px 14px}.ds-unit{font-size:.6em}"
+  },
+  {
+   "name": "Bottom nav",
+   "kind": "nav",
+   "refersTo": "navbar",
+   "description": "Four tabs, icon + word, active icon on a plate.",
+   "html": "<nav class=\"ds-nav\"><a aria-current=\"page\"><span class=\"ds-ic\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M4 4.5h16v15H4ZM4 9.5h16M4 14.5h16M14 4.5v15\"/></svg></span>Calculer</a><a><span class=\"ds-ic\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M4 4.5h16v15H4ZM4 9.5h16M4 14.5h16M14 4.5v15\"/></svg></span>Comparer</a><a><span class=\"ds-ic\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M4 4.5h16v15H4ZM4 9.5h16M4 14.5h16M14 4.5v15\"/></svg></span>Tarifs</a><a><span class=\"ds-ic\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M4 4.5h16v15H4ZM4 9.5h16M4 14.5h16M14 4.5v15\"/></svg></span>Plus</a></nav>",
+   "css": ".ds-nav{display:grid;grid-template-columns:repeat(4,1fr);background:#1c2f86;color:#c9d4f5;box-shadow:0 -2px 0 #15246b,0 -4px 0 #6fc7e0}.ds-nav a{min-height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:500 13px system-ui}.ds-nav .ds-ic{width:56px;height:32px;display:grid;place-items:center;border-radius:6px}.ds-nav a[aria-current]{color:#fff;font-weight:700}.ds-nav a[aria-current] .ds-ic{background:#fff;color:#1c2f86}.ds-nav a:focus-visible{outline:3px solid #fff;outline-offset:-4px}"
+  },
+  {
+   "name": "Segmented control",
+   "kind": "chip",
+   "refersTo": "segment-selected",
+   "description": "Radios, selected painted ultramarine.",
+   "html": "<div class=\"ds-seg\"><span class=\"on\">1 000 Ar</span><span>5 000 Ar</span></div>",
+   "css": ".ds-seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:#fff;border:1px solid #c3ccdb;border-radius:12px;padding:4px}.ds-seg span{min-height:48px;display:grid;place-items:center;border-radius:8px;font:600 17px system-ui}.ds-seg .on{background:#1c2f86;color:#fff}"
+  },
+  {
+   "name": "Board row",
+   "kind": "card",
+   "refersTo": "board-row",
+   "description": "64px list row in a white panel.",
+   "html": "<a class=\"ds-row\"><b>Réglages</b><small>Langue, arrondi, transactions</small></a>",
+   "css": ".ds-row{display:flex;flex-direction:column;min-height:64px;justify-content:center;padding:12px 16px;background:#fff;border:1px solid #c3ccdb;border-radius:12px;color:#101b3a;font:17px system-ui}.ds-row small{color:#44506b;font-size:14px}.ds-row:focus-visible{outline:3px solid #1c2f86}"
+  },
+  {
+   "name": "Button on board",
+   "kind": "button",
+   "refersTo": "button-on-board",
+   "description": "Action on the blue board (retry).",
+   "html": "<button class=\"ds-btn\">Réessayer</button>",
+   "css": ".ds-btn{min-height:48px;padding:0 24px;border-radius:12px;border:0;background:#fff;color:#1c2f86;font:700 17px system-ui}.ds-btn:focus-visible{outline:3px solid #fff;outline-offset:2px}"
+  }
+ ],
+ "narrative": {
+  "northStar": "The Fare Board",
+  "overview": "A painted ultramarine tariff board with prices on white plates; plain, large, familiar controls for cheap Android phones.",
+  "keyCharacteristics": [
+   "Ultramarine board shell",
+   "Price plates with condensed tabular numerals",
+   "Coachwork pinstripe",
+   "48px+ targets",
+   "Light and dark"
+  ],
+  "rules": [
+   {
+    "name": "The Independence Rule",
+    "body": "No operator brand colours or logos; neutral monogram badges.",
+    "section": "colors"
+   },
+   {
+    "name": "The One Board Rule",
+    "body": "Ultramarine for the shell and selection only.",
+    "section": "colors"
+   },
+   {
+    "name": "The Plate Numerals Rule",
+    "body": "Amounts via formatAr on plates, tabular figures.",
+    "section": "typography"
+   }
+  ],
+  "dos": [
+   "Do put every amount on a plate",
+   "Do pair every icon with a word",
+   "Do keep targets >= 48px"
+  ],
+  "donts": [
+   "Don't use operator colours or logos",
+   "Don't add USSD codes or tel: links",
+   "Don't add another web font"
+  ]
+ }
+}
