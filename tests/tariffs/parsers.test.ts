@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { ParseError, parseAmount, rowsToTable } from '../../src/tariffs/parsers/common'
+import { ParseError, checkContiguous, parseAmount, rowsToTable, tryParseAmount } from '../../src/tariffs/parsers/common'
 import { parseAirtel } from '../../src/tariffs/parsers/airtel'
 import { parseMvola } from '../../src/tariffs/parsers/mvola'
 import { parseGenericTables } from '../../src/tariffs/parsers/generic'
@@ -20,6 +20,23 @@ describe('parseAmount', () => {
     expect(parseAmount('-')).toBeNull()
     expect(parseAmount('')).toBeNull()
     expect(parseAmount('  ')).toBeNull()
+    expect(parseAmount('Maimaim-poana')).toBe(0)
+    expect(parseAmount('200Ar')).toBe(200)
+  })
+  it('throws ParseError on non-amount text instead of dropping it', () => {
+    for (const bad of ['1,5', '200 Ar/mois', 'N/A', '12 abc', '1 00', 'Gratuit(2)']) {
+      expect(() => parseAmount(bad), bad).toThrow(ParseError)
+      expect(tryParseAmount(bad), bad).toBeNull()
+    }
+  })
+})
+
+describe('checkContiguous', () => {
+  it('accepts chained bounds and rejects gaps, overlaps and inverted tiers', () => {
+    expect(() => checkContiguous([{ min: 1, max: 10 }, { min: 11, max: 20 }], 'x')).not.toThrow()
+    expect(() => checkContiguous([{ min: 1, max: 10 }, { min: 12, max: 20 }], 'x')).toThrow(ParseError)
+    expect(() => checkContiguous([{ min: 1, max: 10 }, { min: 10, max: 20 }], 'x')).toThrow(ParseError)
+    expect(() => checkContiguous([{ min: 5, max: 1 }], 'x')).toThrow(ParseError)
   })
 })
 
@@ -43,6 +60,21 @@ describe('parseAirtel', () => {
     expect(broken).not.toBe(airtelHtml)
     expect(() => parseAirtel(broken)).toThrow(ParseError)
   })
+  it('throws ParseError on a row with fewer cells than headers', () => {
+    const broken = airtelHtml.replace('<td>100</td> <td>1 000</td> <td>Gratuit</td>', '<td>100</td> <td>1 000</td>')
+    expect(broken).not.toBe(airtelHtml)
+    expect(() => parseAirtel(broken)).toThrow(ParseError)
+  })
+  it('throws ParseError on a non-amount fee cell', () => {
+    const broken = airtelHtml.replace('<td>230</td>', '<td>2,30</td>')
+    expect(broken).not.toBe(airtelHtml)
+    expect(() => parseAirtel(broken)).toThrow(ParseError)
+  })
+  it('throws ParseError on non-contiguous bounds', () => {
+    const broken = airtelHtml.replace('<td>30 001</td>', '<td>30 002</td>')
+    expect(broken).not.toBe(airtelHtml)
+    expect(() => parseAirtel(broken)).toThrow(ParseError)
+  })
   it('throws ParseError on unrelated HTML', () => {
     expect(() => parseAirtel('<html><body><p>maintenance</p></body></html>')).toThrow(ParseError)
   })
@@ -60,6 +92,26 @@ describe('parseMvola', () => {
   it('throws ParseError when an expected column header is missing', () => {
     const broken = mvolaHtml.replace('Auprès d’un Cash Point MVola</', 'Ailleurs</')
     expect(broken).not.toBe(mvolaHtml)
+    expect(() => parseMvola(broken)).toThrow(ParseError)
+  })
+  it('throws ParseError when footnote (1) of the other-operator column is missing', () => {
+    const broken = mvolaHtml.replace('(1) Transfert à partir de 300 Ar', 'Transfert vers autres opérateurs')
+    expect(broken).not.toBe(mvolaHtml)
+    expect(() => parseMvola(broken)).toThrow(ParseError)
+  })
+  it('throws ParseError on a row with fewer cells than headers', () => {
+    const row = '<td width="250">Entre 100 et 1 000 Ar</td><td width="157">100</td><td width="166">–</td>'
+    const broken = mvolaHtml.replace(row, '<td width="250">Entre 100 et 1 000 Ar</td><td width="157">100</td>')
+    expect(broken).not.toBe(mvolaHtml)
+    expect(() => parseMvola(broken)).toThrow(ParseError)
+  })
+  it('throws ParseError on non-contiguous bounds', () => {
+    const broken = mvolaHtml.replace('Entre 5001 et 10 000 Ar', 'Entre 5002 et 10 000 Ar')
+    expect(broken).not.toBe(mvolaHtml)
+    expect(() => parseMvola(broken)).toThrow(ParseError)
+  })
+  it('throws ParseError on an unexpected non-tier row', () => {
+    const broken = mvolaHtml.replace('Entre 5001 et 10 000 Ar', 'De 5001 à 10 000 Ar')
     expect(() => parseMvola(broken)).toThrow(ParseError)
   })
   it('throws ParseError on unrelated HTML', () => {

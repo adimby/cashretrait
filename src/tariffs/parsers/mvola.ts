@@ -1,6 +1,6 @@
 import { load } from 'cheerio'
 import type { FeeTable, OperationKey, Operator } from '../schema'
-import { ParseError, findColumn, normalize, parseAmount, requireTiers, rowsToTable } from './common'
+import { ParseError, checkContiguous, checkRowWidths, findColumn, normalize, parseAmount, requireTiers, rowsToTable } from './common'
 import { parseGenericTables, type GenericTable } from './generic'
 
 export const MVOLA_URL = 'https://mvola.mg/tarifs/'
@@ -26,22 +26,30 @@ function pickTable(tables: GenericTable[], title: string, needles: string[][]): 
   return t
 }
 
-function tiers(t: GenericTable) {
-  return t.rows.flatMap((r) => {
+/** Tier rows of a table; rows that are not « Entre X et Y Ar » must be explicitly allowed. */
+function tiers(t: GenericTable, what: string, allow: (label: string) => boolean = () => false) {
+  checkRowWidths(t.headers, t.rows, what)
+  const rows = t.rows.flatMap((r) => {
     const range = parseRange(r[0] ?? '')
-    return range ? [{ ...range, row: r }] : []
+    if (range) return [{ ...range, row: r }]
+    if (allow(normalize(r[0] ?? ''))) return []
+    throw new ParseError(`${what}: ligne inattendue « ${r[0] ?? ''} »`)
   })
+  checkContiguous(rows, what)
+  return rows
 }
 
 const column = (rows: ReturnType<typeof tiers>, i: number): FeeTable =>
   rowsToTable(rows.map((r) => ({ min: r.min, max: r.max, cell: r.row[i] ?? '' })))
 
-/** Footnote « (n) Transfert à partir de X Ar » referenced by a header label. */
+/** Footnote « (n) Transfert à partir de X Ar » referenced by a header label; a reference without its footnote throws. */
 function footnoteMin(header: string, pageText: string): number | null {
   const ref = header.match(/\((\d+)\)\s*$/)
   if (!ref) return null
   const m = normalize(pageText).match(new RegExp(`\\(${ref[1]}\\)[^(]*?a partir de\\s+([\\d .]+?)\\s*ar\\b`))
-  return m ? parseAmount(m[1]) : null
+  const min = m ? parseAmount(m[1]) : null
+  if (min === null) throw new ParseError(`MVola: note (${ref[1]}) « à partir de X Ar » introuvable pour « ${header} »`)
+  return min
 }
 
 export function parseMvola(html: string): Operator {
@@ -54,8 +62,8 @@ export function parseMvola(html: string): Operator {
   const wd = pickTable(tables, "retrait d'argent", [['cash point']])
   const tr = pickTable(tables, "transfert d'argent", [['vers un abonne mvola'], ['autres operateurs'], ['non abonne mobile money']])
 
-  const wdRows = tiers(wd)
-  const trRows = tiers(tr)
+  const wdRows = tiers(wd, 'MVola retrait', (l) => l.includes('non abonne'))
+  const trRows = tiers(tr, 'MVola transfert')
   if (wdRows.length < 15) throw new ParseError(`MVola retrait: ${wdRows.length} paliers (< 15)`)
   if (trRows.length < 15) throw new ParseError(`MVola transfert: ${trRows.length} paliers (< 15)`)
 

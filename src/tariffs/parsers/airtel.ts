@@ -1,5 +1,5 @@
 import type { FeeTable, OperationKey, Operator } from '../schema'
-import { ParseError, findColumn, normalize, parseAmount, requireTiers, rowsToTable } from './common'
+import { ParseError, checkContiguous, checkRowWidths, findColumn, normalize, parseAmount, requireTiers, rowsToTable } from './common'
 import { parseGenericTables } from './generic'
 
 export const AIRTEL_URL = 'https://www.airtel.mg/airtelmoney/transaction_fees'
@@ -18,6 +18,7 @@ export function parseAirtel(html: string): Operator {
   const iMax = findColumn(table.headers, ['montant maximum'], 'Airtel')
   const cols = COLUMNS.map(([key, needles]) => [key, findColumn(table.headers, needles, 'Airtel')] as const)
 
+  checkRowWidths(table.headers, table.rows, 'Airtel')
   const bounds = table.rows.map((r) => {
     const min = parseAmount(r[iMin] ?? '')
     const max = parseAmount(r[iMax] ?? '')
@@ -25,6 +26,7 @@ export function parseAirtel(html: string): Operator {
     return { min, max, row: r }
   })
   if (bounds.length < 15) throw new ParseError(`Airtel: ${bounds.length} lignes de paliers (< 15)`)
+  checkContiguous(bounds, 'Airtel')
 
   const fees: Partial<Record<OperationKey, FeeTable>> = {}
   for (const [key, i] of cols) {
