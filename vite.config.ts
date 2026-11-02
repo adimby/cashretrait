@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import preact from '@preact/preset-vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { readFileSync } from 'node:fs'
+import { tariffsRuntimeCaching } from './pwa.config'
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'))
 
@@ -59,15 +60,7 @@ export default defineConfig({
         navigateFallback: '/index.html',
         navigateFallbackAllowlist: [/^\/$/, /^\/index\.html$/],
         cleanupOutdatedCaches: true,
-        runtimeCaching: [
-          {
-            // `cache: 'reload'` requests (schema-version refetch) bypass the SW and hit the network.
-            urlPattern: ({ url, request }) =>
-              request.cache !== 'reload' && /^\/tarifs(-history)?\.json$/.test(url.pathname),
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'cr-tarifs', cacheableResponse: { statuses: [200] } },
-          },
-        ],
+        runtimeCaching: [tariffsRuntimeCaching],
       },
     }),
     {
