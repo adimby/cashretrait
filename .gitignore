@@ -7,3 +7,4 @@ node_modules/
 update-report.json
 update-summary.md
 update-suspect.json
+public/tarifs-history.json
