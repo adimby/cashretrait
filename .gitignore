@@ -1,0 +1,6 @@
+.superpowers/
+node_modules/
+dist/
+.vercel/
+update-report.json
+update-summary.md
