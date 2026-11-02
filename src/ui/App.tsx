@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'preact/hooks'
-import { route } from './state/route'
+import { route, tabOf } from './state/route'
 import { t, lang } from './i18n'
 import { Header } from './components/Header'
 import { NavBar } from './components/NavBar'
@@ -42,7 +42,8 @@ export function App() {
       <Header />
       <main id="main" tabIndex={-1}>
         <Screen path={path} />
-        <Disclaimer />
+        {/* Calculer renders its own: under the result card, or at the end when there is none. */}
+        {tabOf(path) !== 'calculer' && <Disclaimer />}
       </main>
       <NavBar />
     </div>

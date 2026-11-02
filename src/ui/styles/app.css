@@ -387,6 +387,8 @@ a.board-row:focus-visible { outline-offset: -3px; border-radius: 0; }
 .action { display: flex; flex-direction: column; gap: var(--s-1); }
 .action-msg { font-size: var(--fs-small); color: var(--ink-2); }
 .action-msg:empty { display: none; }
+.action-msg.is-error { color: var(--ink); font-weight: 600; }
+.disclaimer-compact { margin-top: 0; padding-top: var(--s-3); }
 
 .alts, .chart { display: flex; flex-direction: column; gap: var(--s-3); }
 .alt-row { gap: var(--s-3); }

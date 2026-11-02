@@ -46,6 +46,11 @@ describe('optimizeSplit', () => {
     expect(optimizeSplit(t, 0, opts)).toEqual({ ok: false, reason: 'invalid_amount' })
     expect(optimizeSplit([], 1000, opts)).toEqual({ ok: false, reason: 'unavailable' })
   })
+  it('too_large when the table stops below the per-transaction limit', () => {
+    const short = [{ min: 100, max: 5000000, fee: 1000 }]
+    expect(optimizeSplit(short, 6000000, { ...opts, maxTx: 1 })).toEqual({ ok: false, reason: 'too_large' })
+    expect(optimizeSplit(short, 6000000, { ...opts, maxTx: 2 }).ok).toBe(true)
+  })
   it('maxTx 1 → single transaction, savings 0', () => {
     const r = ok(optimizeSplit(t, 1000001, { ...opts, maxTx: 1 }))
     expect(r.transactions).toHaveLength(1)

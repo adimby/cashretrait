@@ -4,7 +4,7 @@ import { TariffsSchema } from '../../src/tariffs/schema'
 import { optimizeSplit } from '../../src/engine/optimize'
 import { inverse, maxWithdrawable } from '../../src/engine/inverse'
 import { optsFor } from '../../src/engine/limits'
-import { shareText, share } from '../../src/ui/share'
+import { shareText, share, shareDetailed } from '../../src/ui/share'
 import { formatAr } from '../../src/ui/format'
 import type { SplitOk } from '../../src/engine/types'
 
@@ -75,6 +75,16 @@ describe('share', () => {
     const writeText = vi.fn().mockResolvedValue(undefined)
     vi.stubGlobal('navigator', { share: vi.fn().mockRejectedValue(new Error('nope')), clipboard: { writeText } })
     await expect(share('x')).resolves.toBe('copied')
+  })
+  it('tells a closed share sheet from a real failure', async () => {
+    const abort = Object.assign(new Error('closed'), { name: 'AbortError' })
+    const writeText = vi.fn()
+    vi.stubGlobal('navigator', { share: vi.fn().mockRejectedValue(abort), clipboard: { writeText } })
+    await expect(shareDetailed('x')).resolves.toBe('cancelled')
+    await expect(share('x')).resolves.toBe('failed')
+    expect(writeText).not.toHaveBeenCalled()
+    vi.stubGlobal('navigator', { share: vi.fn().mockRejectedValue(new Error('x')), clipboard: { writeText: vi.fn().mockRejectedValue(new Error('denied')) } })
+    await expect(shareDetailed('x')).resolves.toBe('failed')
   })
   it('fails cleanly with nothing available', async () => {
     vi.stubGlobal('navigator', {})

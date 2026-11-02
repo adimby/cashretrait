@@ -1,6 +1,6 @@
 import { OPERATORS, type FeeTable, type OperationKey, type OperatorId, type Tariffs } from '../tariffs/schema'
 import { optimizeSplit } from '../engine/optimize'
-import { maxWithdrawable, type InverseResult, type MaxResult } from '../engine/inverse'
+import { inverse, maxWithdrawable, type InverseResult, type MaxResult } from '../engine/inverse'
 import { sendPaths, type PathKind } from '../engine/paths'
 import { tierHint } from '../engine/hints'
 import { optsFor, type BaseOpts } from '../engine/limits'
@@ -50,6 +50,25 @@ const SEND_KIND: Record<PathKind, OperationKey> = {
   same: 'transfer_same', same_app: 'transfer_same_app', other_op: 'transfer_other_op', non_customer: 'transfer_non_customer',
 }
 
+/** Why no send path works: the engine's reason for the main path (same or other operator,
+ *  then the account-less one), so « trop grand » is not reported as « indisponible ». */
+export function receiveFailure(t: Tariffs, from: OperatorId, to: Dest, net: number, incl: boolean, base: BaseOpts): Fail['reason'] {
+  const fees = t.operators[from].fees
+  const tries: [FeeTable | undefined, FeeTable | undefined, OperatorId][] = []
+  const dests = isOp(to) ? [to] : [from, ...OPERATORS.filter((d) => d !== from)]
+  for (const d of dests) {
+    if (d === from) tries.push([fees.transfer_same, fees.withdrawal, d], [fees.transfer_same_app, fees.withdrawal, d])
+    else tries.push([fees.transfer_other_op, t.operators[d].fees.withdrawal, d])
+  }
+  tries.push([fees.transfer_non_customer, fees.withdrawal_non_customer, from])
+  for (const [transferTable, withdrawTable, d] of tries) {
+    if (!transferTable || !withdrawTable) continue
+    const r = inverse({ net, transferTable, withdrawTable, includeWithdrawalFee: incl, opts: optsFor(t, from, base), withdrawOpts: optsFor(t, d, base) })
+    if (!r.ok) return r.reason
+  }
+  return 'unavailable'
+}
+
 /** Runs the engine for one form state. Pure: no signals, no DOM. */
 export function compute(t: Tariffs, f: CalcForm, base: BaseOpts): Outcome {
   if (f.amount === null || f.amount <= 0) return { status: 'empty' }
@@ -96,13 +115,7 @@ export function compute(t: Tariffs, f: CalcForm, base: BaseOpts): Outcome {
   if (f.mode === 'receive') {
     const to = normalizeDest('receive', f.to, f.op)
     const paths = sendPaths(t, f.op, to === 'any' || to === 'none' ? null : to, amount, f.incl, base)
-    if (!paths.length) {
-      // Tell why: try the recipient's own withdrawal first, it is the usual blocker.
-      const dest = isOp(to) ? to : f.op
-      const w = t.operators[dest].fees.withdrawal
-      const r = w ? optimizeSplit(w, amount, optsFor(t, dest, base)) : null
-      return { status: 'fail', reason: r && !r.ok ? r.reason : 'unavailable' }
-    }
+    if (!paths.length) return { status: 'fail', reason: receiveFailure(t, f.op, to, amount, f.incl, base) }
     const opts_ = paths.map((p): Option => {
       const r = p.result as Ok<InverseResult>
       return { kind: p.kind, to: p.to, total: r.total, result: r }

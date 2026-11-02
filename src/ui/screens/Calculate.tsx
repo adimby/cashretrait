@@ -16,6 +16,7 @@ import { ShareButton } from '../components/ShareButton'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { Icon } from '../components/Icon'
 import { Plate } from '../components/Plate'
+import { Disclaimer } from '../components/Disclaimer'
 
 /** Form state lives outside the component so it survives a trip to another tab. */
 const form = signal<CalcForm>(DEFAULT_FORM)
@@ -180,6 +181,7 @@ export function Calculate() {
             </>
           )}
       </div>
+      {outcome?.status !== 'ok' && <Disclaimer />}
     </section>
   )
 }

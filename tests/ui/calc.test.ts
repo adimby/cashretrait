@@ -31,6 +31,15 @@ describe('compute', () => {
     expect(run({ mode: 'send', op: 'airtel', to: 'none', amount: 10000 })).toEqual({ status: 'fail', reason: 'unavailable' })
     expect(run({ mode: 'max', amount: 100 })).toEqual({ status: 'fail', reason: 'insufficient' })
   })
+  it('receive reports the failing leg\'s real reason (transfer too large, not unavailable)', () => {
+    const f = { ...DEFAULT_FORM, mode: 'receive' as const, op: 'mvola' as const, to: 'airtel' as const, amount: 9000000 }
+    expect(compute(T, f, { step: 1000, maxTx: 1 })).toEqual({ status: 'fail', reason: 'too_large' })
+    expect(compute(T, { ...f, amount: 50 }, base)).toEqual({ status: 'fail', reason: 'below_min' })
+  })
+  it('send above the table ceiling is too large', () => {
+    expect(compute(T, { ...DEFAULT_FORM, mode: 'send', op: 'mvola', to: 'airtel', amount: 6000000 }, { step: 1000, maxTx: 1 }))
+      .toEqual({ status: 'fail', reason: 'too_large' })
+  })
   it('send Orange → Orange lists both variants, cheapest first', () => {
     const o = run({ mode: 'send', op: 'orange', to: 'orange', amount: 260000 })
     expect(o.status).toBe('ok')
@@ -53,7 +62,8 @@ describe('compute', () => {
     // With one transaction allowed, the hint speaks.
     const one = compute(T, { ...DEFAULT_FORM, amount: 26000 }, { step: 1000, maxTx: 1 })
     expect(one.status === 'ok' && one.hint).toEqual({ amount: 25000, fee: 650, currentFee: 1300 })
-    expect(run({ amount: 260000 }).status === 'ok' && (run({ amount: 260000 }) as { hint: unknown }).hint).toBe(null)
+    const far = run({ amount: 260000 })
+    expect(far.status === 'ok' && far.hint).toBe(null)
   })
   it('max: amount within balance', () => {
     const o = run({ mode: 'max', amount: 300000 })

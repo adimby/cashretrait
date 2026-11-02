@@ -10,7 +10,7 @@ const M = { l: 46, r: 14, t: 26, b: 26 }
 const PW = W - M.l - M.r
 const PH = H - M.t - M.b
 
-/** 1/2/5 × 10^k at or above x. */
+/** Smallest of 1/2/4/5/10 × 10^k at or above x (halves stay round for the mid tick). */
 function niceCeil(x: number): number {
   if (x <= 0) return 1
   const p = 10 ** Math.floor(Math.log10(x))

@@ -10,6 +10,7 @@ import { formatAr } from '../format'
 import { Plate } from './Plate'
 import { OperatorBadge } from './OperatorBadge'
 import { Icon } from './Icon'
+import { Disclaimer } from './Disclaimer'
 
 type Ok<T> = Extract<T, { ok: true }>
 
@@ -108,6 +109,7 @@ export function ResultCard({ mode, best, notIncl, canSplit, actions }: {
       <h2 id="result-title" class="result-title">{t('result.best')}</h2>
       {body}
       <div class="result-actions">{actions}</div>
+      <Disclaimer compact />
     </section>
   )
 }

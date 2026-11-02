@@ -31,6 +31,9 @@ export function optimizeSplit(table: FeeTable, amount: number, opts: SplitOpts):
   if (!Number.isInteger(amount) || amount <= 0) return { ok: false, reason: 'invalid_amount' }
   if (amount < opts.minTx) return { ok: false, reason: 'below_min' }
   if (amount > opts.maxTx * opts.maxTxAmount) return { ok: false, reason: 'too_large' }
+  // The table itself may stop below the operator's per-transaction limit (e.g. transfers to another operator).
+  const tableCap = table.length ? Math.max(...table.map((t) => t.max)) : 0
+  if (tableCap > 0 && amount > opts.maxTx * Math.min(tableCap, opts.maxTxAmount)) return { ok: false, reason: 'too_large' }
 
   const cands = candidates(table, opts)
   const fees = cands.map((a) => feeFor(table, a)!)

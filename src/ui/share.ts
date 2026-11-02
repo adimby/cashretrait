@@ -48,6 +48,12 @@ export function shareText(mode: CalcMode, result: SplitOk | InverseResult | MaxR
 
 /** Native share sheet when available, otherwise copy to the clipboard. */
 export async function share(text: string): Promise<'shared' | 'copied' | 'failed'> {
+  const r = await shareDetailed(text)
+  return r === 'cancelled' ? 'failed' : r
+}
+
+/** Like `share`, but tells a closed share sheet ('cancelled') from a real failure. */
+export async function shareDetailed(text: string): Promise<'shared' | 'copied' | 'cancelled' | 'failed'> {
   const nav = globalThis.navigator as (Navigator & { share?: (d: ShareData) => Promise<void> }) | undefined
   if (nav && typeof nav.share === 'function') {
     try {
@@ -55,7 +61,7 @@ export async function share(text: string): Promise<'shared' | 'copied' | 'failed
       return 'shared'
     } catch (e) {
       // The person closed the share sheet: nothing to do.
-      if ((e as { name?: string })?.name === 'AbortError') return 'failed'
+      if ((e as { name?: string })?.name === 'AbortError') return 'cancelled'
     }
   }
   try {
