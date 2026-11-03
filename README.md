@@ -69,6 +69,8 @@ Le workflow s'exécute chaque jour à 03:00 UTC (et à la demande : *Actions ›
 - **Grille illisible ou invalide, source inaccessible** : le workflow ouvre une **Issue** « Mise à jour tarifs échouée : <opérateur> » (une seule par opérateur tant qu'elle est ouverte). Les anciens tarifs restent en ligne.
 - **Échec des tests ou du commit/push vers `main`** : rien n'est publié et le workflow ouvre l'**Issue** « Mise à jour tarifs : échec du commit », ou y ajoute un commentaire avec le lien de l'exécution si elle est déjà ouverte.
 
+**Airtel Money est ignoré par ce workflow** (statut `skipped`, aucune Issue) : sa page de tarifs est construite dans le navigateur et protégée contre les visites automatisées, elle ne peut donc pas être lue depuis GitHub. Ses tarifs se mettent à jour **à la main** via `/zadmin` (voir « Mise à jour manuelle » ci-dessous). Le workflow **Airtel manual update reminder** ouvre une Issue de rappel **le 1er janvier et le 1er juillet** ; vérifiez alors la page Airtel et fermez l'Issue. La liste des opérateurs ignorés est `MANUAL_OPERATORS` dans `scripts/update-tariffs.ts`.
+
 Quand les grilles officielles changent, pensez à mettre à jour les fixtures (`tests/fixtures/*.html`, `orange.pdf`) **et** `tests/fixtures/tarifs.snapshot.json` ensemble, si vous voulez que les tests suivent les nouveaux frais.
 
 ## Page d'administration (`/zadmin`)
@@ -84,9 +86,9 @@ Dans tous les cas, l'administration affiche un aperçu des différences. Vérifi
 
 Si l'enregistrement répond **409** (conflit), quelqu'un d'autre, ou la mise à jour automatique, a modifié `tarifs.json` entre-temps : rechargez la page pour repartir de la version actuelle, puis refaites votre modification.
 
-### Si le PDF Orange ou la page Airtel n'est pas récupérable automatiquement
+### Mise à jour manuelle (Airtel, ou PDF Orange non récupérable)
 
-L'Issue ouverte par le workflow indique la source en échec. Dans ce cas :
+Pour Airtel, faites-le à chaque rappel semestriel ou dès que vous apprenez un changement de tarifs. Pour Orange, l'Issue ouverte par le workflow indique la source en échec. Dans les deux cas :
 
 1. Récupérez à la main le PDF de tarifs Orange Money (ou enregistrez la page Airtel Money depuis votre navigateur).
 2. Ouvrez `/zadmin`, déposez le fichier, relisez l'aperçu, puis enregistrez.

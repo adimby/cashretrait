@@ -1,0 +1,35 @@
+name: Airtel manual update reminder
+# Airtel's fee page cannot be read automatically (built in the browser,
+# protected against automated visits). Every 6 months, open an Issue asking
+# for a manual update through the admin page.
+on:
+  schedule:
+    - cron: '0 6 1 1,7 *' # 1 January and 1 July, 06:00 UTC (09:00 Madagascar)
+  workflow_dispatch:
+permissions:
+  issues: write
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const title = 'Rappel : mettre à jour les tarifs Airtel Money à la main'
+            const body = [
+              'Les tarifs Airtel Money ne sont pas mis à jour automatiquement (la page Airtel ne peut pas être lue par la tâche quotidienne).',
+              '',
+              'À faire :',
+              '1. Ouvrir https://www.airtel.mg/airtelmoney/transaction_fees dans un navigateur et vérifier si la grille a changé.',
+              '2. Si oui : enregistrer la page (Ctrl+S, « HTML seulement »), puis la déposer dans la page d’administration (opérateur Airtel), vérifier l’aperçu et publier.',
+              '3. Fermer cette Issue.',
+              '',
+              'Voir le README, section « Mise à jour manuelle ».',
+            ].join('\n')
+            const open = await github.paginate(github.rest.issues.listForRepo, { owner: context.repo.owner, repo: context.repo.repo, state: 'open' })
+            const existing = open.find((i) => !i.pull_request && i.title === title)
+            if (existing) {
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: existing.number, body: 'Rappel semestriel : les tarifs Airtel n’ont pas encore été vérifiés.' })
+            } else {
+              await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body })
+            }

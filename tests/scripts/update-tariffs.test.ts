@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { runUpdate, type Fetcher } from '../../scripts/update-tariffs'
+import { MANUAL_REASON, runUpdate, type Fetcher } from '../../scripts/update-tariffs'
 import type { Tariffs } from '../../src/tariffs/schema'
 
 const current = JSON.parse(readFileSync('tests/fixtures/tarifs.snapshot.json', 'utf8')) as Tariffs
@@ -22,9 +22,9 @@ function fetcherWith(over: { mvola?: Uint8Array; orange?: Error } = {}): Fetcher
 const status = (o: { outcomes: { operator: string; status: string }[] }, id: string) => o.outcomes.find((x) => x.operator === id)!.status
 
 describe('runUpdate', () => {
-  it('fixtures inchangées → tout unchanged', async () => {
+  it('fixtures inchangées → unchanged (Airtel skipped)', async () => {
     const r = await runUpdate(current, fetcherWith())
-    expect(r.outcomes.map((o) => o.status)).toEqual(['unchanged', 'unchanged', 'unchanged'])
+    expect(r.outcomes.map((o) => o.status)).toEqual(['unchanged', 'skipped', 'unchanged'])
     expect(r.next).toEqual(current)
   })
 
@@ -35,7 +35,7 @@ describe('runUpdate', () => {
     const mv = r.outcomes.find((o) => o.operator === 'mvola')!
     expect(mv.status).toBe('ok')
     expect(mv.changes).toHaveLength(1)
-    expect(status(r, 'airtel')).toBe('unchanged')
+    expect(status(r, 'airtel')).toBe('skipped')
     expect(status(r, 'orange')).toBe('unchanged')
     expect(r.next.operators.mvola).not.toEqual(current.operators.mvola)
     expect(r.next.operators.airtel).toEqual(current.operators.airtel)
@@ -57,12 +57,23 @@ describe('runUpdate', () => {
     const or = r.outcomes.find((o) => o.operator === 'orange')!
     expect(or.status).toBe('failed')
     expect(or.reasons.join()).toContain('403')
-    expect(status(r, 'airtel')).toBe('unchanged')
+    expect(status(r, 'airtel')).toBe('skipped')
     expect(status(r, 'mvola')).toBe('ok')
   })
 
   it('page illisible (ParseError) → failed', async () => {
     const r = await runUpdate(current, fetcherWith({ mvola: enc('<html></html>') }))
     expect(status(r, 'mvola')).toBe('failed')
+  })
+
+  it('Airtel (mise à jour manuelle) → skipped, jamais téléchargé ni signalé en échec', async () => {
+    const seen: string[] = []
+    const base = fetcherWith()
+    const r = await runUpdate(current, async (url) => { seen.push(url); return base(url) })
+    const a = r.outcomes.find((o) => o.operator === 'airtel')!
+    expect(a).toEqual({ operator: 'airtel', status: 'skipped', changes: [], reasons: [MANUAL_REASON] })
+    expect(seen).not.toContain(current.operators.airtel.source.url)
+    expect(r.next.operators.airtel).toEqual(current.operators.airtel)
+    expect(r.outcomes.filter((o) => o.status === 'failed')).toEqual([])
   })
 })
