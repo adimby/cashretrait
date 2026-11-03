@@ -11,8 +11,8 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -20,7 +20,7 @@ jobs:
       - run: npm run update-tariffs
       - name: Read report
         id: report
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs')
@@ -41,7 +41,7 @@ jobs:
       - name: Choose review branch
         id: pick
         if: ${{ !cancelled() && steps.report.outputs.suspect == 'true' }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const { owner, repo } = context.repo
@@ -65,7 +65,7 @@ jobs:
       - name: Open pull request and issues
         id: notify
         if: ${{ always() && steps.report.conclusion == 'success' }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           BRANCH: ${{ steps.branch.outcome == 'success' && steps.pick.outputs.name || '' }}
           MAIN_FAILED: ${{ steps.main.outcome == 'failure' && 'true' || '' }}
