@@ -93,6 +93,7 @@ export function ResultCard({ mode, best, notIncl, senderPaid, canSplit, actions 
           <TxList title={count('result.recipient', r.withdrawal.transactions.length)} txs={r.withdrawal.transactions} />
           <Total amount={r.total} />
           {savings > 0 && <Savings savings={savings} single={null} n={2} />}
+          {notIncl && r.withdrawal.total > 0 && <p class="result-note">{t('result.notIncl')}</p>}
         </>
       )
     } else {

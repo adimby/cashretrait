@@ -25,7 +25,12 @@ export function sendPaths(
       opts: optsFor(t, from, opts),
       withdrawOpts: optsFor(t, dest ?? from, opts),
     })
-    if (result.ok) out.push({ kind, from, to: dest, result })
+    if (!result.ok) return
+    // Account-less recipient: he withdraws with a code, there is no account balance to "take out" from.
+    if (kind === 'non_customer' && result.takeOut) {
+      const { takeOut: _drop, ...rest } = result
+      out.push({ kind, from, to: dest, result: rest })
+    } else out.push({ kind, from, to: dest, result })
   }
   const dests = to === null ? OPERATORS : [to]
   for (const d of dests) {

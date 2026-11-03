@@ -23,6 +23,7 @@ export type InverseResult =
       /**
        * Only when the withdrawal fee is not included: the recipient holds exactly `net`, so he cannot
        * execute `withdrawal` (he would also need R). This is what he can really take out of `net`.
+       * Absent when R = 0, and dropped by sendPaths for the account-less path (no balance to keep).
        */
       takeOut?: MaxResult
     }
@@ -36,7 +37,8 @@ export function inverse(i: InverseInput): InverseResult {
   const transfer = optimizeSplit(i.transferTable, send, i.opts)
   if (!transfer.ok) return transfer
   const total = transfer.total + withdrawal.total
-  if (i.includeWithdrawalFee) return { ok: true, send, transfer, withdrawal, total }
+  // A free withdrawal (fee 0) can be executed with the net alone: nothing more to say.
+  if (i.includeWithdrawalFee || withdrawal.total === 0) return { ok: true, send, transfer, withdrawal, total }
   return { ok: true, send, transfer, withdrawal, total, takeOut: maxWithdrawable(i.withdrawTable, i.net, i.withdrawOpts ?? i.opts) }
 }
 

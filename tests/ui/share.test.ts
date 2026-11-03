@@ -67,6 +67,15 @@ describe('shareText', () => {
     expect(r.takeOut).toEqual({ ok: false, reason: 'insufficient' })
     expect(shareText('receive', r, 'fr')).toContain('il ne peut rien retirer')
   })
+  it('receive, fee not included but free withdrawal (0 Ar) → no "il lui faudrait aussi" / take-out copy', () => {
+    const free = T.operators.mvola.fees.withdrawal_non_customer!
+    const r = inverse({ net: 50000, withdrawTable: free, transferTable: mv.transfer_same!, includeWithdrawalFee: false, opts: optsFor(T, 'mvola', { step: 1000, maxTx: 5 }) })
+    if (!r.ok) throw new Error(r.reason)
+    expect(r.takeOut).toBeUndefined()
+    const s = shareText('receive', r, 'fr')
+    expect(s).not.toMatch(/il lui faudrait aussi|sur son compte|au plus/)
+    expect(s).toMatch(/Il fait 1 retrait/)
+  })
   it('max: amount and remaining balance', () => {
     const r = maxWithdrawable(mv.withdrawal!, 100000, optsFor(T, 'mvola', { step: 1000, maxTx: 5 }))
     expect(r.ok).toBe(true)

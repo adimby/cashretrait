@@ -50,3 +50,17 @@ describe('sendPaths', () => {
     expect(sendPaths(t, 'mvola', 'airtel', -3, true, o)).toEqual([])
   })
 })
+
+describe('sendPaths, fee not included', () => {
+  it('account-less path never carries a take-out (no account balance), account paths do', () => {
+    // Make the account-less withdrawal paid, so a take-out would otherwise be computed.
+    const paid = structuredClone(t)
+    paid.operators.mvola.fees.withdrawal_non_customer = [{ min: 100, max: 5000000, fee: 500 }]
+    const ps = sendPaths(paid, 'mvola', null, 100000, false, { step: 1000, maxTx: 5 })
+    const nc = ps.find((p) => p.kind === 'non_customer')
+    expect(nc).toBeDefined()
+    expect(nc!.result.ok && nc!.result.takeOut).toBeUndefined()
+    const same = ps.find((p) => p.kind === 'same')!
+    expect(same.result.ok && same.result.takeOut).toBeTruthy()
+  })
+})
