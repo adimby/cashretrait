@@ -70,7 +70,7 @@ cashretrait/
 └─ vercel.json
 ```
 
-Flux principal : navigateur → `tarifs.json` (cache service worker, stale-while-revalidate) → moteur local → affichage. Aucun appel serveur pour calculer.
+Flux principal : navigateur → `tarifs.json` (cache service worker, NetworkFirst 3 s, repli localStorage) → moteur local → affichage. Aucun appel serveur pour calculer.
 
 ## 4. Format `tarifs.json`
 
@@ -133,7 +133,7 @@ Complexité : ≤ ~30 candidats, k−1 ≤ 9 avec répétition ; élagage par bo
 4. Résultat : T, découpage du transfert, découpage du retrait, coût total F + R.
 
 ### 5.3 Montant maximal retirable — `maxWithdrawable(table, balance, opts)` (F5)
-Plus grand montant M (multiple du pas) tel que M + coût optimal du retrait de M ≤ balance. Recherche dichotomique sur M ; la fonction coût étant non monotone localement, on vérifie aussi les plafonds de paliers proches de la borne trouvée.
+Plus grand montant M (multiple du pas) tel que M + coût optimal du retrait de M ≤ balance. Balayage descendant exact depuis min(balance − frais minimal, plafond), en sautant les M dont la borne inférieure de coût dépasse le budget ; le premier M qui tient est le plus grand (la fonction coût n’étant pas monotone, une dichotomie serait fausse).
 
 ### 5.4 Chemins (F4), alerte palier (F6), opérateur moins cher (F9)
 - `paths.ts` : pour un envoi, énumère intra-opérateur, inter-opérateurs, non-abonné ; exclut les chemins non disponibles ; trie par coût total.
