@@ -17,6 +17,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Install headless browser (pages rendered in JavaScript, e.g. Airtel)
+        run: npx playwright install --with-deps chromium
       - run: npm run update-tariffs
       - name: Read report
         id: report

@@ -59,6 +59,44 @@ const httpFetcher: Fetcher = async (url) => {
   return new Uint8Array(await res.arrayBuffer())
 }
 
+const isPdf = (b: Uint8Array) => b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46 // %PDF
+
+/**
+ * Some operator pages (Airtel) are rendered client-side: a plain HTTP fetch
+ * returns an empty shell without the fee table. In that case, retry with a
+ * headless browser and return the rendered DOM.
+ */
+export function withBrowserFallback(http: Fetcher, browser: Fetcher): Fetcher {
+  return async (url) => {
+    let first: Uint8Array | null = null
+    try {
+      first = await http(url)
+      if (isPdf(first) || /<table[\s>]/i.test(new TextDecoder().decode(first))) return first
+    } catch {
+      // fall through to the browser
+    }
+    try {
+      return await browser(url)
+    } catch (e) {
+      if (first) return first // let the parser report the missing table
+      throw e
+    }
+  }
+}
+
+const browserFetcher: Fetcher = async (url) => {
+  const { chromium } = await import('@playwright/test')
+  const b = await chromium.launch(process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {})
+  try {
+    const page = await b.newPage({ locale: 'fr-FR' })
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+    await page.waitForSelector('table td', { timeout: 45_000 })
+    return new TextEncoder().encode(await page.content())
+  } finally {
+    await b.close()
+  }
+}
+
 function summary(outcomes: UpdateOutcome[], tariffs: Tariffs): string {
   const lines: string[] = ['# Mise à jour des tarifs', '']
   for (const o of outcomes) {
@@ -79,7 +117,7 @@ function summary(outcomes: UpdateOutcome[], tariffs: Tariffs): string {
 
 async function main() {
   const current = JSON.parse(readFileSync('public/tarifs.json', 'utf8')) as Tariffs
-  const { next, withSuspect, outcomes } = await runUpdate(current, httpFetcher)
+  const { next, withSuspect, outcomes } = await runUpdate(current, withBrowserFallback(httpFetcher, browserFetcher))
   if (outcomes.some((o) => o.status === 'ok')) writeFileSync('public/tarifs.json', JSON.stringify(next, null, 2) + '\n')
   writeFileSync('update-suspect.json', JSON.stringify(withSuspect, null, 2) + '\n')
   writeFileSync('update-report.json', JSON.stringify(outcomes, null, 2) + '\n')
