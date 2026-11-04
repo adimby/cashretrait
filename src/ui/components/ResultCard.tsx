@@ -75,7 +75,7 @@ export function ResultCard({ mode, best, notIncl, senderPaid, canSplit, actions 
       <>
         <PathLine kind={best.kind} to={best.to} />
         <TxList title={count(`result.do.${mode}`, r.transactions.length)} txs={r.transactions} />
-        <Total amount={r.total} />
+        <Totals taken={r.transactions.reduce((a, x) => a + x.amount, 0)} takenLabel={t(`result.taken.${mode}`)} fee={r.total} />
         <Savings savings={r.savings} single={r.single} n={r.transactions.length} canSplit={canSplit} />
         {senderPaid && <p class="result-note">{t('result.senderPaid')}</p>}
       </>
@@ -126,7 +126,7 @@ export function ResultCard({ mode, best, notIncl, senderPaid, canSplit, actions 
       <>
         <Lead label={t('result.max')} amount={r.amount} />
         <TxList title={count('result.do.withdraw', r.withdrawal.transactions.length)} txs={r.withdrawal.transactions} />
-        <Total amount={r.withdrawal.total} />
+        <Totals taken={r.amount} takenLabel={t('result.taken.withdraw')} fee={r.withdrawal.total} />
         <p class="result-note">{t('result.remaining', { amount: formatAr(r.remaining) })}</p>
       </>
     )
@@ -143,6 +143,16 @@ export function ResultCard({ mode, best, notIncl, senderPaid, canSplit, actions 
 
 function Lead({ label, amount }: { label: string; amount: number }) {
   return <p class="result-lead"><span class="result-lead-label">{label}</span><Plate amount={amount} size="l" /></p>
+}
+
+/** Total taken out (or sent) next to the total fees: the sum the user checks, then its cost. */
+function Totals({ taken, takenLabel, fee }: { taken: number; takenLabel: string; fee: number }) {
+  return (
+    <div class="result-totals">
+      <p class="result-total-cell"><span class="result-total-label">{takenLabel}</span><Plate amount={taken} size="m" /></p>
+      <p class="result-total-cell result-total"><span class="result-total-label">{t('result.total')}</span><Plate amount={fee} size="m" /></p>
+    </div>
+  )
 }
 
 function Total({ amount, label }: { amount: number; label?: string }) {

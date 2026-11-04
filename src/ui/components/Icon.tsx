@@ -28,6 +28,7 @@ const paths: Record<string, string> = {
   // two arrows chasing each other: tariffs were refreshed
   refresh: 'M19.5 12a7.5 7.5 0 0 1-13.1 5M4.5 12a7.5 7.5 0 0 1 13.1-5M17.6 3v4h-4M6.4 21v-4h4',
   history: 'M12 21a9 9 0 1 0-9-9M3 12V7.5M3 12h4.5M12 7.5V12l3 2',
+  close: 'M6 6l12 12M18 6L6 18',
   offline: 'M3 3l18 18M8.5 16.5a5 5 0 0 1 7 0M5 12.5a10 10 0 0 1 4-2.4M19 12.5a10 10 0 0 0-2.3-1.7M2 8.8a15 15 0 0 1 4.2-2.6M22 8.8A15 15 0 0 0 11 5M12 20h.01',
 }
 

@@ -84,15 +84,16 @@ test('retrait sans compte (0 Ar de frais) : les frais ont été payés par l’e
   await expect(result.getByText(/payés par l'expéditeur/)).toBeVisible()
 })
 
-test('montants rapides : visibles si le champ est vide ou en cours de saisie, masqués ensuite', async ({ page }) => {
-  const quick = page.getByRole('group', { name: /montants rapides|Montants/i })
+test('montants rapides : seulement quand le champ est vide ; la croix les fait revenir', async ({ page }) => {
+  const quick = page.getByRole('group', { name: /Montants rapides/i })
   await expect(quick).toBeVisible()
   const field = page.getByLabel(/montant/i).first()
   await field.fill('540000')
-  await page.getByRole('heading', { name: 'Meilleure option' }).click()
   await expect(quick).toHaveCount(0)
-  await field.focus()
+  await page.getByRole('button', { name: 'Effacer le montant' }).click()
+  await expect(field).toHaveValue('')
   await expect(quick).toBeVisible()
   await quick.getByRole('button').nth(2).click()
   await expect(field).toHaveValue(/100.000/)
+  await expect(page.getByRole('region', { name: 'Meilleure option' }).getByText('Total retiré')).toBeVisible()
 })
