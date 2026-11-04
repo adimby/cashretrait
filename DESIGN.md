@@ -28,12 +28,12 @@ colors:
 typography:
   display:
     fontFamily: "Barlow Condensed, Roboto Condensed, Arial Narrow, system-ui, sans-serif"
-    fontSize: "2.25rem"
+    fontSize: "1.625rem"
     fontWeight: 600
-    lineHeight: 1.05
+    lineHeight: 1.1
   headline:
     fontFamily: "Barlow Condensed, Roboto Condensed, Arial Narrow, system-ui, sans-serif"
-    fontSize: "1.5rem"
+    fontSize: "1.25rem"
     fontWeight: 600
     lineHeight: 1.15
   numeral:
@@ -41,23 +41,38 @@ typography:
     fontWeight: 600
     lineHeight: 1
     fontFeature: "tnum, lnum"
+  numeral-s:
+    fontFamily: "Barlow Condensed, Roboto Condensed, Arial Narrow, system-ui, sans-serif"
+    fontSize: "1rem"
+    fontWeight: 600
+    lineHeight: 1
+  numeral-m:
+    fontFamily: "Barlow Condensed, Roboto Condensed, Arial Narrow, system-ui, sans-serif"
+    fontSize: "1.25rem"
+    fontWeight: 600
+    lineHeight: 1
+  numeral-l:
+    fontFamily: "Barlow Condensed, Roboto Condensed, Arial Narrow, system-ui, sans-serif"
+    fontSize: "1.75rem"
+    fontWeight: 600
+    lineHeight: 1
   body:
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, sans-serif"
-    fontSize: "1.0625rem"
+    fontSize: "0.9375rem"
     fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: 1.45
   lead:
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, sans-serif"
-    fontSize: "1.1875rem"
+    fontSize: "1.0625rem"
     fontWeight: 400
     lineHeight: 1.45
   small:
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, sans-serif"
-    fontSize: "0.875rem"
+    fontSize: "0.8125rem"
     lineHeight: 1.45
   label:
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, sans-serif"
-    fontSize: "0.8125rem"
+    fontSize: "0.75rem"
     fontWeight: 500
     lineHeight: 1.2
 rounded:
@@ -65,55 +80,56 @@ rounded:
   segment: "8px"
   panel: "12px"
 spacing:
-  s1: "4px"
-  s2: "8px"
-  s3: "12px"
-  s4: "16px"
-  s5: "24px"
-  s6: "32px"
-  s7: "48px"
+  s1: "3px"
+  s2: "6px"
+  s3: "8px"
+  s4: "12px"
+  s5: "16px"
+  s6: "24px"
+  s7: "32px"
+  gutter: "16px"
 components:
   plate-s:
     backgroundColor: "{colors.plate}"
     textColor: "{colors.plate-ink}"
     typography: "{typography.numeral}"
     rounded: "{rounded.plate}"
-    padding: "4px 8px"
+    padding: "3px 7px"
   plate-l:
     backgroundColor: "{colors.plate}"
     textColor: "{colors.plate-ink}"
     typography: "{typography.numeral}"
     rounded: "{rounded.plate}"
-    padding: "8px 14px"
+    padding: "6px 12px"
   appbar:
     backgroundColor: "{colors.board}"
     textColor: "{colors.board-ink}"
-    height: "56px"
+    height: "48px"
   navbar:
     backgroundColor: "{colors.board}"
     textColor: "{colors.board-ink-2}"
-    height: "68px"
+    height: "60px"
   navbar-item-active:
     backgroundColor: "{colors.plate}"
     textColor: "{colors.board}"
     rounded: "{rounded.plate}"
-    size: "56px x 32px"
+    size: "48px x 28px"
   segment-selected:
     backgroundColor: "{colors.board}"
     textColor: "{colors.board-ink}"
     rounded: "{rounded.segment}"
-    height: "48px"
+    height: "44px"
   board-list:
     backgroundColor: "{colors.surface}"
     rounded: "{rounded.panel}"
   board-row:
-    height: "64px"
+    height: "52px"
     padding: "12px 16px"
   button-on-board:
     backgroundColor: "{colors.plate}"
     textColor: "{colors.board}"
     rounded: "{rounded.panel}"
-    height: "48px"
+    height: "44px"
 ---
 
 # Design System: CashRetrait
@@ -132,7 +148,7 @@ It refuses the fintech default (white cards on grey, gradient balance hero, bran
 - Ultramarine board above and below, cool enamel ground between.
 - Numbers on white plates, set in Barlow Condensed 600 with tabular figures.
 - Thin coachwork pinstripe (`--stripe`) separating board from content.
-- Big targets: 48 px minimum, 64 px rows, 68 px nav.
+- Compact but tappable (density pass, user feedback on a 412 px phone): 44 px minimum targets, 52 px rows, 60 px nav, 15 px body.
 - Light and dark from `prefers-color-scheme`; same structure in both.
 
 ## Colors
@@ -168,13 +184,13 @@ A restrained board-and-enamel palette: one committed blue for the shell, cool ne
 **Character:** a sign-painter's condensed numeral for amounts and screen titles, against the phone's own sans for reading. Only one weight of the display face ships.
 
 ### Hierarchy
-- **Display** (600, 2.25rem, 1.05): screen titles.
-- **Headline** (600, 1.5rem, 1.15): section titles.
-- **Numeral** (600, plate-dependent 1.125 / 1.5 / 2.25rem, tabular): every amount and date on a plate.
-- **Lead** (400, 1.1875rem, 1.45, max 34ch): the one-sentence screen intro.
-- **Body** (400, 1.0625rem, 1.5, max 65ch).
-- **Small** (0.875rem): help, disclaimer, meta.
-- **Label** (500/700 active, 0.8125rem): bottom nav labels.
+- **Display** (600, 1.625rem, 1.1): screen titles.
+- **Headline** (600, 1.25rem, 1.15): section titles.
+- **Numeral** (600, plate-dependent 1 / 1.25 / 1.75rem, tabular): every amount and date on a plate.
+- **Lead** (400, 1.0625rem, 1.45, max 34ch): the one-sentence screen intro.
+- **Body** (400, 0.9375rem, 1.45, max 65ch).
+- **Small** (0.8125rem): help, disclaimer, meta.
+- **Label** (500/700 active, 0.75rem): bottom nav labels.
 
 ### Named Rules
 **The Plate Numerals Rule.** Amounts are always formatted by `formatAr` (non-breaking spaces, « 1 000 000 Ar ») and set in the numeral face with tabular figures; "Ar" is 0.6 em.
@@ -182,7 +198,7 @@ A restrained board-and-enamel palette: one committed blue for the shell, cool ne
 
 ## Layout
 
-Single column, max 560 px, 16 px side gutters, centred above 560 px. Sticky app bar (56 px + safe area), fixed bottom nav (68 px + safe area); `main` reserves the nav height plus 32 px. Spacing scale 4/8/12/16/24/32/48; screens stack with 16 px gaps, sections open with 24 px above. The disclaimer closes every screen after 48 px and a rule. Hash routes: `#/calculer` (default), `#/comparer`, `#/tarifs`, `#/plus`, `#/plus/reglages`, `#/plus/apropos`, `#/plus/favoris`.
+Single column, max 560 px, 16 px side gutters (`--gutter`), centred above 560 px. Sticky app bar (48 px + safe area), fixed bottom nav (60 px + safe area); `main` reserves the nav height plus 24 px. Spacing scale 3/6/8/12/16/24/32 (compact, about a third tighter than the first build); screens stack with 12 px gaps, sections open with 16 px above. The disclaimer closes every screen after 32 px and a rule. Goal: on a 412 px phone the answer (result card) starts in the first viewport. Hash routes: `#/calculer` (default), `#/comparer`, `#/tarifs`, `#/plus`, `#/plus/reglages`, `#/plus/apropos`, `#/plus/favoris`.
 
 ## Elevation & Depth
 
@@ -204,22 +220,25 @@ Four equal columns: Calculer, Comparer, Tarifs, Plus. Icon (24 px, 2 px stroke) 
 Wordmark in the numeral face; right side shows « Tarifs du » + date plate. Offline/stale turns the status into an amber chip with an offline icon. A load failure with no cached tariffs shows an inline alert with a "Réessayer" button on a white plate.
 
 ### Board list
-One white panel, 1 px rule separators, 64 px rows: icon, title + one-line description, chevron. Used for the Plus menu and source links.
+One white panel, 1 px rule separators, 52 px rows: icon, title + one-line description, chevron. Used for the Plus menu and source links.
 
 ### Segmented control
-Native radios inside a panel; selected segment painted ultramarine (dark: light plate). 48 px tall, focus ring on the visible span.
+Native radios inside a panel; selected segment painted ultramarine (dark: light plate). 44 px tall, focus ring on the visible span.
 
 ### Stepper
-56 px square buttons with a 2 px outline, value on a large plate, disabled at bounds.
+48 px square buttons (44 px in the compact variant) with a 2 px outline, value on a large plate, disabled at bounds.
 
 ### Operator badge
-Neutral monogram (MV / AM / OM) in a 36×28 outlined plate + name. Same colour for all operators.
+Neutral monogram (MV / AM / OM) in a 32×24 outlined plate + name. Same colour for all operators. In the operator picker the monogram sits beside the name (one 44 px row, names may wrap on two lines); with a fourth option (« Sans compte », « N'importe lequel ») it stacks above the name.
 
 ### Amount field (Calculer)
-The typed amount is set like a plate numeral (Barlow Condensed 2.25rem, tabular) in a 64 px surface box with a 2 px accent outline and a faded « Ar ». Numeric keypad (`inputmode="numeric"`), spaces accepted, formatted as you type with the caret kept. Below it, four quick-amount plates (10 000 / 50 000 / 100 000 / 500 000); the active one is painted as a selected segment.
+The typed amount is set like a plate numeral (Barlow Condensed 1.875rem, tabular) in a 52 px surface box with a 2 px accent outline and a faded « Ar ». Numeric keypad (`inputmode="numeric"`), spaces accepted, formatted as you type with the caret kept. Below it, four quick-amount plates (10 000 / 50 000 / 100 000 / 500 000); the active one is painted as a selected segment.
 
 ### Result card (the hero)
 « Meilleure option »: a surface panel with a 2 px accent-line border (the selected answer). Transactions are numbered rows read like a fare board line: amount on a medium plate, a dotted leader, then « frais » and a small fee plate. A rule, then « Frais au total » on a large plate; then the savings in Savings Green with a check icon. Receive and Max modes lead with the amount to send / withdraw on a large plate. Share and Favori sit in two equal outlined buttons at the foot. Alternatives follow as a board list (badge, path, extra cost, total plate).
+
+### Same budget card (Retirer only)
+« Même budget, plus d'argent »: under the result card when splitting gives strictly more cash for the debit of the classic one-go withdrawal. A surface panel (1 px rule, not the accent border: it supports, the result card leads). One sentence of intro, then a real table: row headers Retiré / Frais / Débité, columns « 1 seul retrait » and « En n retraits »; every value on a small plate, the better column washed with 8 % Savings Green and green plate edges, its « Retiré » plate one step larger. Below: the extra cash in Savings Green with a check (same pattern as the savings line), then the split and what stays on the account in small faded text.
 
 ### Fee staircase
 Inline SVG, single series: accent-line 2 px step line with a 10 % wash, hairline grid, condensed tabular ticks. Ink dot + hairline at the amount paid in one go, Savings Green dots at the split transactions (legend for both). The touched tier gets an 8 % band and its range/fee is read out below; a « Voir la grille en tableau » disclosure gives the same tiers as a table.
@@ -247,7 +266,7 @@ Small faded text above a rule at the end of every screen: « Calcul indicatif ba
 ### Do:
 - **Do** put every amount on a plate via `formatAr`/`<Plate>`.
 - **Do** pair every icon with a word (low-literacy users).
-- **Do** keep targets ≥ 48 px and contrast ≥ 4.5:1; test at 360 px in both themes.
+- **Do** keep targets ≥ 44 px and contrast ≥ 4.5:1; test at 360 px and 412 px in both themes.
 - **Do** keep all copy in `src/ui/i18n/{fr,mg}.json`.
 
 ### Don't:

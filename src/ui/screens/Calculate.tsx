@@ -11,6 +11,7 @@ import { shareText } from '../share'
 import { AmountInput } from '../components/AmountInput'
 import { OperatorPicker } from '../components/OperatorPicker'
 import { ResultCard, Alternatives, pathLabel } from '../components/ResultCard'
+import { BudgetCompare } from '../components/BudgetCompare'
 import { FeeStairChart } from '../components/FeeStairChart'
 import { ShareButton } from '../components/ShareButton'
 import { FavoriteButton } from '../components/FavoriteButton'
@@ -134,7 +135,8 @@ export function Calculate() {
           <OperatorPicker name="op" legend={t('calc.op')} value={f.op} onChange={(op) => update({ op: op as OperatorId })} />
         )}
 
-        <AmountInput id="amount" label={t(`calc.amount.${f.mode}`)} value={f.amount} onChange={(n) => update({ amount: n })} />
+        <AmountInput id="amount" label={t(`calc.amount.${f.mode}`)} value={f.amount} onChange={(n) => update({ amount: n })}
+          help={f.mode === 'max' ? t('calc.amount.max.help') : undefined} />
 
         {f.mode === 'withdraw' && nonCustomer && <YesNo value={f.customer} onChange={(customer) => update({ customer })} />}
         {f.mode === 'receive' && (
@@ -175,6 +177,7 @@ export function Calculate() {
                     <FavoriteButton mode={f.mode} params={params} label={favLabel(calcForm)} />
                   </div>
                 )} />
+              {outcome.budget && <BudgetCompare data={outcome.budget} />}
               <p class="visually-hidden" role="status">{t('result.total')} {formatAr(outcome.best.total)}</p>
               <Alternatives items={outcome.alternatives} best={outcome.best.total} />
               {outcome.chart && (

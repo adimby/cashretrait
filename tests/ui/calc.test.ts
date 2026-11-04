@@ -73,6 +73,30 @@ describe('compute', () => {
   })
 })
 
+describe('compute › same budget (Retirer only)', () => {
+  it('withdraw 540 000 MVola: the one-go debit (548 800) buys 542 000 when split', () => {
+    const o = run({ amount: 540000 })
+    if (o.status !== 'ok') throw new Error(o.status)
+    expect(o.budget?.classic).toEqual({ amount: 540000, fee: 8800, debited: 548800 })
+    expect(o.budget?.better.amount).toBe(542000)
+    expect(o.budget?.better.extra).toBe(2000)
+  })
+  it('uses the selected withdrawal table: free MVola withdrawal without account → no card', () => {
+    const o = run({ amount: 540000, customer: false })
+    expect(o.status === 'ok' && o.budget).toBeNull()
+  })
+  it('follows the settings: one transaction allowed → no card', () => {
+    const o = compute(T, { ...DEFAULT_FORM, amount: 540000 }, { step: 1000, maxTx: 1 })
+    expect(o.status === 'ok' && o.budget).toBeNull()
+  })
+  it('only in Retirer: send, receive and max never carry it', () => {
+    for (const mode of ['send', 'receive', 'max'] as const) {
+      const o = run({ mode, amount: 540000 })
+      expect(o.status === 'ok' && o.budget, mode).toBeNull()
+    }
+  })
+})
+
 describe('favorites ↔ form', () => {
   it('round-trips the fields of each mode', () => {
     const f: CalcForm = { mode: 'receive', op: 'airtel', to: 'any', amount: 75000, customer: true, incl: false }

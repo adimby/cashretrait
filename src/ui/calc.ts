@@ -3,6 +3,7 @@ import { optimizeSplit } from '../engine/optimize'
 import { inverse, maxWithdrawable, type InverseResult, type MaxResult } from '../engine/inverse'
 import { sendPaths, type PathKind } from '../engine/paths'
 import { tierHint } from '../engine/hints'
+import { sameBudget, type SameBudget } from '../engine/budget'
 import { optsFor, type BaseOpts } from '../engine/limits'
 import type { Fail, SplitOk } from '../engine/types'
 import type { CalcMode, FavParams } from './state/favorites'
@@ -23,7 +24,11 @@ export type Hint = { amount: number; fee: number; currentFee: number }
 export type Outcome =
   | { status: 'empty' }
   | { status: 'fail'; reason: Fail['reason'] }
-  | { status: 'ok'; best: Option; alternatives: Option[]; hint: Hint | null; chart: ChartData | null }
+  | {
+      status: 'ok'; best: Option; alternatives: Option[]; hint: Hint | null; chart: ChartData | null
+      /** Retirer only: what the one-go debit buys when split (null elsewhere or when it buys nothing more). */
+      budget: SameBudget | null
+    }
 
 const isOp = (v: unknown): v is OperatorId => (OPERATORS as readonly unknown[]).includes(v)
 
@@ -86,6 +91,7 @@ export function compute(t: Tariffs, f: CalcForm, base: BaseOpts): Outcome {
       status: 'ok', best: { kind: null, to: null, total: r.total, result: r }, alternatives: [],
       hint: splitHint(table, amount, r.total, opts),
       chart: { table, key, op: f.op, amount, splits: r.transactions.map((x) => x.amount) },
+      budget: sameBudget(table, amount, opts),
     }
   }
 
@@ -109,6 +115,7 @@ export function compute(t: Tariffs, f: CalcForm, base: BaseOpts): Outcome {
     return {
       status: 'ok', best: b, alternatives: rest, hint: splitHint(b.table, amount, b.total, opts),
       chart: { table: b.table, key: b.key, op: f.op, amount, splits: best.transactions.map((x) => x.amount) },
+      budget: null,
     }
   }
 
@@ -127,6 +134,7 @@ export function compute(t: Tariffs, f: CalcForm, base: BaseOpts): Outcome {
     return {
       status: 'ok', best: b, alternatives: rest, hint: null,
       chart: { table, key, op: f.op, amount: r.send, splits: r.transfer.transactions.map((x) => x.amount) },
+      budget: null,
     }
   }
 
@@ -137,6 +145,7 @@ export function compute(t: Tariffs, f: CalcForm, base: BaseOpts): Outcome {
   return {
     status: 'ok', best: { kind: null, to: null, total: r.withdrawal.total, result: r }, alternatives: [], hint: null,
     chart: { table, key: 'withdrawal', op: f.op, amount: r.amount, splits: r.withdrawal.transactions.map((x) => x.amount) },
+    budget: null,
   }
 }
 

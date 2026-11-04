@@ -28,6 +28,21 @@ test('retirer 1 000 001 Ar (pas 100) : total 8 900 Ar et une économie', async (
   await expect(result.locator('.result-savings')).toContainText(/Économie/)
 })
 
+test('retirer 540 000 Ar MVola : même budget (548 800 Ar) → 542 000 Ar en découpant', async ({ page }) => {
+  await page.getByRole('radio', { name: 'Retirer' }).check({ force: true })
+  await page.getByRole('radio', { name: 'MVola' }).first().check({ force: true })
+  await page.getByLabel(/montant/i).first().fill('540000')
+  const card = page.getByRole('region', { name: "Même budget, plus d'argent" })
+  await expect(card).toBeVisible()
+  const text = (await card.innerText()).replace(NBSP, ' ')
+  expect(text).toContain('548 800')
+  expect(text).toContain('542 000')
+  expect(text).toMatch(/2 000 Ar de plus en main/)
+  // Only in Retirer.
+  await page.getByRole('radio', { name: 'Vider mon compte' }).check({ force: true })
+  await expect(page.getByRole('region', { name: "Même budget, plus d'argent" })).toHaveCount(0)
+})
+
 test('le destinataire doit recevoir 100 000 Ar, MVola vers MVola, frais compris', async ({ page }) => {
   await page.getByRole('radio', { name: 'Le destinataire doit recevoir' }).check({ force: true })
   await page.getByRole('radio', { name: 'MVola' }).first().check({ force: true })
@@ -40,8 +55,9 @@ test('le destinataire doit recevoir 100 000 Ar, MVola vers MVola, frais compris'
   await expect(result.locator('.result-lead')).toContainText('101 900'.replace(' ', ' '))
 })
 
-test('max retirable avec un solde de 487 350 Ar : montant affiché et mention indicative', async ({ page }) => {
-  await page.getByRole('radio', { name: 'Max retirable' }).check({ force: true })
+test('vider mon compte avec un solde de 487 350 Ar : montant affiché et mention indicative', async ({ page }) => {
+  await page.getByRole('radio', { name: 'Vider mon compte' }).check({ force: true })
+  await expect(page.getByText(/plus gros montant que vous pouvez retirer/)).toBeVisible()
   await page.getByRole('radio', { name: 'MVola' }).first().check({ force: true })
   await page.getByLabel(/solde|montant/i).first().fill('487350')
   const result = page.getByRole('region', { name: 'Meilleure option' })

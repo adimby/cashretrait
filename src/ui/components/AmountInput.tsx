@@ -10,8 +10,8 @@ const show = (n: number | null) => (n === null ? '' : formatNumber(n))
 
 /** Ariary amount field: numeric keypad, accepts spaces, shows « 1 000 000 » as you type
  *  (caret kept after the same digit), plus quick-amount plates. */
-export function AmountInput({ id, label, value, onChange, quick = true }: {
-  id: string; label: string; value: number | null; onChange: (n: number | null) => void; quick?: boolean
+export function AmountInput({ id, label, value, onChange, quick = true, help }: {
+  id: string; label: string; value: number | null; onChange: (n: number | null) => void; quick?: boolean; help?: string
 }) {
   const ref = useRef<HTMLInputElement>(null)
   // Keep the DOM value formatted when the amount changes from outside (quick amount, favorite, hint).
@@ -39,9 +39,10 @@ export function AmountInput({ id, label, value, onChange, quick = true }: {
   return (
     <div class="field amount-field">
       <label class="field-label" for={id}>{label}</label>
+      {help && <p class="field-help" id={`${id}-help`}>{help}</p>}
       <div class="amount-box">
         <input ref={ref} id={id} class="amount-input" type="text" inputMode="numeric" autoComplete="off"
-          enterKeyHint="done" pattern="[0-9  ]*" placeholder="0" defaultValue={show(value)} onInput={onInput} />
+          aria-describedby={help ? `${id}-help` : undefined} enterKeyHint="done" pattern="[0-9  ]*" placeholder="0" defaultValue={show(value)} onInput={onInput} />
         <span class="amount-unit" aria-hidden="true">Ar</span>
       </div>
       {quick && <div class="quick" role="group" aria-label={t('calc.quick')}>

@@ -42,4 +42,4 @@ Real public fee grids in `public/tarifs.json`. No testimonials, user counts or p
 4. Independence is visible: neutral toward all three operators.
 
 ## Accessibility & Inclusion
-WCAG AA contrast, touch targets ≥ 48 px, 360 px first, large type, icons paired with words for low-literacy users *(inferred)*.
+WCAG AA contrast, touch targets ≥ 44 px, 360 px first, compact but legible type (15 px body, chosen by the owner after testing on a 412 px phone: less scrolling), icons paired with words for low-literacy users *(inferred)*.
