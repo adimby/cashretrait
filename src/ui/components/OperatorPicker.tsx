@@ -4,14 +4,14 @@ import { Icon } from './Icon'
 
 /** Operator choice as a segmented control of neutral badges (monogram above name).
  *  `extra` adds a last option such as « Sans compte » or « N'importe lequel ». */
-export function OperatorPicker<V extends string>({ name, legend, value, onChange, extra }: {
-  name: string; legend: string; value: V | OperatorId; onChange: (v: V | OperatorId) => void
+export function OperatorPicker<V extends string>({ name, legend, value, onChange, extra, hideLegend = false }: {
+  name: string; legend: string; value: V | OperatorId; onChange: (v: V | OperatorId) => void; hideLegend?: boolean
   extra?: { value: V; label: string; icon: string }
 }) {
   const opts: (V | OperatorId)[] = [...OPERATORS, ...(extra ? [extra.value] : [])]
   return (
     <fieldset class="field">
-      <legend class="field-label">{legend}</legend>
+      <legend class={hideLegend ? 'visually-hidden' : 'field-label'}>{legend}</legend>
       <div class={`segmented op-picker cols-${opts.length}`}>
         {opts.map((o) => (
           <label key={o} class="segment">

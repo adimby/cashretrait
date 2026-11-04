@@ -48,14 +48,14 @@ function ModeTabs({ value }: { value: CalcMode }) {
           </label>
         ))}
       </div>
-      <p class="mode-desc" id="mode-desc">{t(`calc.mode.desc.${value}`)}</p>
+      <p class="mode-desc visually-hidden" id="mode-desc">{t(`calc.mode.desc.${value}`)}</p>
     </fieldset>
   )
 }
 
 function NoAccount({ value, onChange }: { value: boolean; onChange: (customer: boolean) => void }) {
   return (
-    <div class="field">
+    <div class="field field-tight">
       <label class="check">
         <input type="checkbox" checked={!value} onChange={(e) => onChange(!(e.currentTarget as HTMLInputElement).checked)} />
         <span class="check-label">{t('calc.noAccount')}</span>
@@ -115,7 +115,7 @@ export function Calculate() {
   return (
     <section class="screen calc" aria-labelledby="screen-title">
       <UpdateBanner />
-      <h1 id="screen-title" class="screen-title" tabIndex={-1}>{t('calculer.title')}</h1>
+      <h1 id="screen-title" class="screen-title visually-hidden" tabIndex={-1}>{t('calculer.title')}</h1>
       <FavoriteChips items={favorites.value} />
       <ModeTabs value={f.mode} />
 
@@ -128,7 +128,7 @@ export function Calculate() {
               extra={f.mode === 'send' ? { value: 'none', label: t('calc.to.none'), icon: 'user' } : { value: 'any', label: t('calc.to.any'), icon: 'any' }} />
           </>
         ) : (
-          <OperatorPicker name="op" legend={t('calc.op')} value={f.op} onChange={(op) => update({ op: op as OperatorId })} />
+          <OperatorPicker name="op" legend={t('calc.op')} hideLegend value={f.op} onChange={(op) => update({ op: op as OperatorId })} />
         )}
 
         <AmountInput id="amount" label={t(`calc.amount.${f.mode}`)} value={f.amount} onChange={(n) => update({ amount: n })}

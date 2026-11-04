@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'preact/hooks'
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks'
 import { t } from '../i18n'
 import { formatAr, formatNumber } from '../format'
 
@@ -14,6 +14,18 @@ export function AmountInput({ id, label, value, onChange, quick = true, help }: 
   id: string; label: string; value: number | null; onChange: (n: number | null) => void; quick?: boolean; help?: string
 }) {
   const ref = useRef<HTMLInputElement>(null)
+  // Quick amounts only while the field is empty or being edited (less scrolling once an amount is set).
+  // Hiding is deferred: the tap that moved focus elsewhere (a checkbox, « Garder »…) must land
+  // before the row disappears and the content below moves up.
+  const [focused, setFocused] = useState(false)
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const focusIn = () => { if (hideTimer.current) clearTimeout(hideTimer.current); setFocused(true) }
+  const focusOut = (e: FocusEvent) => {
+    if ((e.currentTarget as HTMLElement).contains(e.relatedTarget as Node | null)) return
+    if (hideTimer.current) clearTimeout(hideTimer.current)
+    hideTimer.current = setTimeout(() => setFocused(false), 600)
+  }
+  useEffect(() => () => { if (hideTimer.current) clearTimeout(hideTimer.current) }, [])
   // Keep the DOM value formatted when the amount changes from outside (quick amount, favorite, hint).
   useLayoutEffect(() => {
     const el = ref.current
@@ -37,18 +49,20 @@ export function AmountInput({ id, label, value, onChange, quick = true, help }: 
   }
 
   return (
-    <div class="field amount-field">
-      <label class="field-label" for={id}>{label}</label>
-      {help && <p class="field-help" id={`${id}-help`}>{help}</p>}
+    <div class="field amount-field" onFocusIn={focusIn} onFocusOut={focusOut}>
       <div class="amount-box">
-        <input ref={ref} id={id} class="amount-input" type="text" inputMode="numeric" autoComplete="off"
-          aria-describedby={help ? `${id}-help` : undefined} enterKeyHint="done" pattern="[0-9  ]*" placeholder="0" defaultValue={show(value)} onInput={onInput} />
-        <span class="amount-unit" aria-hidden="true">Ar</span>
+        <label class="amount-label" for={id}>{label}</label>
+        <div class="amount-row">
+          <input ref={ref} id={id} class="amount-input" type="text" inputMode="numeric" autoComplete="off"
+            aria-describedby={help ? `${id}-help` : undefined} enterKeyHint="done" pattern="[0-9  ]*" placeholder="0" defaultValue={show(value)} onInput={onInput} />
+          <span class="amount-unit" aria-hidden="true">Ar</span>
+        </div>
       </div>
-      {quick && <div class="quick" role="group" aria-label={t('calc.quick')}>
+      {help && <p class="field-help" id={`${id}-help`}>{help}</p>}
+      {quick && (value === null || focused) && <div class="quick" role="group" aria-label={t('calc.quick')}>
         {QUICK_AMOUNTS.map((q) => (
           <button key={q} type="button" class="quick-btn" aria-pressed={value === q} aria-label={formatAr(q)}
-            onClick={() => onChange(q)}>
+            onPointerDown={(e) => e.preventDefault()} onClick={() => onChange(q)}>
             <span class="plate-num">{formatNumber(q)}</span>
           </button>
         ))}
