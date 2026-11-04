@@ -19,7 +19,7 @@ export function OperatorPicker<V extends string>({ name, legend, value, onChange
             <span>
               {extra && o === extra.value ? (
                 <span class="op-badge op-extra"><span class="op-mono op-mono-icon" aria-hidden="true"><Icon name={extra.icon} size={18} /></span><span class="op-name">{extra.label}</span></span>
-              ) : <OperatorBadge op={o as OperatorId} />}
+              ) : <OperatorBadge op={o as OperatorId} short />}
             </span>
           </label>
         ))}

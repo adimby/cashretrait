@@ -30,7 +30,7 @@ test('Envoyer : 250 000 Ar MVola vers MVola, découpage dont la somme fait le mo
 })
 
 test('Le destinataire doit recevoir, frais non compris : seul le retrait réellement possible est proposé', async ({ page }) => {
-  await page.getByRole('radio', { name: 'Le destinataire doit recevoir' }).check({ force: true })
+  await page.getByRole('radio', { name: 'Faire recevoir' }).check({ force: true })
   await page.getByRole('radio', { name: 'MVola' }).first().check({ force: true })
   await page.getByRole('radio', { name: 'MVola' }).nth(1).check({ force: true })
   await page.getByLabel(/montant/i).first().fill('100000')
@@ -64,7 +64,7 @@ test('Comparer : coût mensuel des trois opérateurs, le moins cher en tête', a
 test('Tarifs : grille Airtel Money, retrait, bornes réelles et historique', async ({ page }) => {
   await nav(page).getByRole('link', { name: 'Tarifs' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Tarifs' })).toBeVisible()
-  await page.getByRole('radio', { name: 'Airtel Money' }).first().check({ force: true })
+  await page.getByRole('radio', { name: 'Airtel', exact: true }).first().check({ force: true })
   await page.getByRole('radio', { name: /^Retrait/ }).first().check({ force: true })
   await expect(page.getByRole('table', { name: 'Retrait, Airtel Money' })).toBeVisible()
   await expect(page.getByText(/^Modifiée le \d{2}\/\d{2}\/\d{4}$/)).toBeVisible()

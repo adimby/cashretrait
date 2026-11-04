@@ -225,6 +225,9 @@ One white panel, 1 px rule separators, 52 px rows: icon, title + one-line descri
 ### Segmented control
 Native radios inside a panel; selected segment painted ultramarine (dark: light plate). 44 px tall, focus ring on the visible span.
 
+### Calculer form (compact)
+Modes are one line of underlined tabs (Retirer · Envoyer · Faire recevoir · Vider): no panel, 44 px, the selected tab in ink with a 3 px accent-line underline, a one-line description of the mode below. Operators are three separate outlined pills (monogram + short name: MVola, Airtel, Orange), the selected one painted as a selected segment; no surrounding panel. « Retrait sans compte (avec un code) » is a checkbox, not a two-option segment. Quick amounts are 34 px plates whose hit area is extended to 44 px.
+
 ### Stepper
 48 px square buttons (44 px in the compact variant) with a 2 px outline, value on a large plate, disabled at bounds.
 

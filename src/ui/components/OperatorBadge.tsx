@@ -5,11 +5,11 @@ const MONOGRAM: Record<OperatorId, string> = { mvola: 'MV', airtel: 'AM', orange
 
 /** Neutral operator badge: same colour for every operator, told apart by monogram and name only.
  *  Never operator logos or brand colours (the app is independent). */
-export function OperatorBadge({ op, withName = true }: { op: OperatorId; withName?: boolean }) {
+export function OperatorBadge({ op, withName = true, short = false }: { op: OperatorId; withName?: boolean; short?: boolean }) {
   return (
     <span class="op-badge">
       <span class="op-mono" aria-hidden={withName ? 'true' : undefined}>{MONOGRAM[op]}</span>
-      {withName && <span class="op-name">{t(`op.${op}`)}</span>}
+      {withName && <span class="op-name">{t(short ? `op.short.${op}` : `op.${op}`)}</span>}
     </span>
   )
 }

@@ -39,12 +39,12 @@ test('retirer 540 000 Ar MVola : même budget (548 800 Ar) → 542 000 Ar en dé
   expect(text).toContain('542 000')
   expect(text).toMatch(/2 000 Ar de plus en main/)
   // Only in Retirer.
-  await page.getByRole('radio', { name: 'Vider mon compte' }).check({ force: true })
+  await page.getByRole('radio', { name: 'Vider', exact: true }).check({ force: true })
   await expect(page.getByRole('region', { name: "Même budget, plus d'argent" })).toHaveCount(0)
 })
 
 test('le destinataire doit recevoir 100 000 Ar, MVola vers MVola, frais compris', async ({ page }) => {
-  await page.getByRole('radio', { name: 'Le destinataire doit recevoir' }).check({ force: true })
+  await page.getByRole('radio', { name: 'Faire recevoir' }).check({ force: true })
   await page.getByRole('radio', { name: 'MVola' }).first().check({ force: true })
   await page.getByRole('radio', { name: 'MVola' }).nth(1).check({ force: true })
   await page.getByLabel(/montant/i).first().fill('100000')
@@ -56,7 +56,7 @@ test('le destinataire doit recevoir 100 000 Ar, MVola vers MVola, frais compris'
 })
 
 test('vider mon compte avec un solde de 487 350 Ar : montant affiché et mention indicative', async ({ page }) => {
-  await page.getByRole('radio', { name: 'Vider mon compte' }).check({ force: true })
+  await page.getByRole('radio', { name: 'Vider', exact: true }).check({ force: true })
   await expect(page.getByText(/plus gros montant que vous pouvez retirer/)).toBeVisible()
   await page.getByRole('radio', { name: 'MVola' }).first().check({ force: true })
   await page.getByLabel(/solde|montant/i).first().fill('487350')
@@ -78,7 +78,7 @@ test('vider mon compte avec un solde de 487 350 Ar : montant affiché et mention
 test('retrait sans compte (0 Ar de frais) : les frais ont été payés par l’expéditeur', async ({ page }) => {
   await page.getByRole('radio', { name: 'Retirer' }).check({ force: true })
   await page.getByRole('radio', { name: 'MVola' }).first().check({ force: true })
-  await page.getByRole('radio', { name: 'Sans compte, avec un code' }).check({ force: true })
+  await page.getByRole('checkbox', { name: 'Retrait sans compte (avec un code)' }).check({ force: true })
   await page.getByLabel(/montant/i).first().fill('50000')
   const result = page.getByRole('region', { name: 'Meilleure option' })
   await expect(result.getByText(/payés par l'expéditeur/)).toBeVisible()

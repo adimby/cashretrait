@@ -40,31 +40,27 @@ function ModeTabs({ value }: { value: CalcMode }) {
   return (
     <fieldset class="field mode-field">
       <legend class="visually-hidden">{t('calc.mode.label')}</legend>
-      <div class="segmented mode-tabs">
+      <div class="mode-tabs" aria-describedby="mode-desc">
         {CALC_MODES.map((m) => (
-          <label key={m} class="segment">
+          <label key={m} class="mode-tab">
             <input type="radio" name="mode" value={m} checked={m === value} onChange={() => update({ mode: m })} />
             <span>{t(`calc.mode.${m}`)}</span>
           </label>
         ))}
       </div>
+      <p class="mode-desc" id="mode-desc">{t(`calc.mode.desc.${value}`)}</p>
     </fieldset>
   )
 }
 
-function YesNo({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+function NoAccount({ value, onChange }: { value: boolean; onChange: (customer: boolean) => void }) {
   return (
-    <fieldset class="field">
-      <legend class="field-label">{t('calc.customer')}</legend>
-      <div class="segmented">
-        {[true, false].map((v) => (
-          <label key={String(v)} class="segment">
-            <input type="radio" name="customer" checked={v === value} onChange={() => onChange(v)} />
-            <span>{t(v ? 'calc.customer.yes' : 'calc.customer.no')}</span>
-          </label>
-        ))}
-      </div>
-    </fieldset>
+    <div class="field">
+      <label class="check">
+        <input type="checkbox" checked={!value} onChange={(e) => onChange(!(e.currentTarget as HTMLInputElement).checked)} />
+        <span class="check-label">{t('calc.noAccount')}</span>
+      </label>
+    </div>
   )
 }
 
@@ -138,7 +134,7 @@ export function Calculate() {
         <AmountInput id="amount" label={t(`calc.amount.${f.mode}`)} value={f.amount} onChange={(n) => update({ amount: n })}
           help={f.mode === 'max' ? t('calc.amount.max.help') : undefined} />
 
-        {f.mode === 'withdraw' && nonCustomer && <YesNo value={f.customer} onChange={(customer) => update({ customer })} />}
+        {f.mode === 'withdraw' && nonCustomer && <NoAccount value={f.customer} onChange={(customer) => update({ customer })} />}
         {f.mode === 'receive' && (
           <div class="field">
             <label class="check">
